@@ -17,6 +17,8 @@ For all kind of documentation which covers install to how to develop the extensi
 [Donate to the Frontend Editing for TYPO3 project](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WPXRSUTAJNRES&source=url)
 
 ### To Add JS / CSS Files To Front End Editing
+
+
     plugin.tx_frontend_editing {
 		settings {
 			enableDefaultRightBar.50 = 10
@@ -29,3 +31,13 @@ For all kind of documentation which covers install to how to develop the extensi
 		}
 	}
 enableDefaultRightBar is To enable or Disable the default style
+
+### To add Drop Zone Area
+Import Core In html
+   
+	xmlns:core="TYPO3\CMS\FrontendEditing\ViewHelpers"
+Call Drop Zone Area With
+   
+	 <core:DropZone></core:DropZone>  
+	 <core:DropZone colPos="{colpos}" parentUid="{parentUid}"></core:DropZone>
+	
