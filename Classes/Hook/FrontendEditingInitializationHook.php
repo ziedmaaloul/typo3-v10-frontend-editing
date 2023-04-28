@@ -46,7 +46,6 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Core\Utility\RootlineUtility;
-use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
@@ -61,7 +60,6 @@ use TYPO3\CMS\FrontendEditing\Service\ContentEditableWrapperService;
 use TYPO3\CMS\FrontendEditing\Service\ExtensionManagerConfigurationService;
 use TYPO3\CMS\FrontendEditing\Utility\ConfigurationUtility;
 use TYPO3\CMS\FrontendEditing\Utility\FrontendEditingUtility;
-use TYPO3\CMS\Lang\LanguageService as LanguageServiceTypo38;
 
 /**
  * Hook class using the "ContentPostProc" hook in TSFE for rendering the panels
@@ -191,7 +189,6 @@ class FrontendEditingInitializationHook
 
         // If not language service is set then create one
         if (!isset($GLOBALS['LANG'])) {
-           
             $GLOBALS['LANG'] = GeneralUtility::makeInstance(LanguageService::class);
             $GLOBALS['LANG']->init($GLOBALS['BE_USER']->uc['lang']);
         }
@@ -242,14 +239,13 @@ class FrontendEditingInitializationHook
             list(, $rtePopupWindowHeight) = GeneralUtility::trimExplode('x', $rtePopupWindowSize);
         }
         $rtePopupWindowHeight = !empty($rtePopupWindowHeight) ? (int) $rtePopupWindowHeight : 600;
-       
+
         // Define DateTimePicker dateformat
         $dateFormat = ($GLOBALS['TYPO3_CONF_VARS']['SYS']['USdateFormat'] ?
             ['MM-DD-YYYY', 'HH:mm MM-DD-YYYY'] : ['DD-MM-YYYY', 'HH:mm DD-MM-YYYY']);
 
         // Load available content elements right here, because it adds too much stuff to PageRenderer,
         // so it has to be loaded before
-
 
         $availableContentElementTypes = $this->getContentItems();
 
@@ -258,7 +254,6 @@ class FrontendEditingInitializationHook
         // PageRenderer needs to be completely reinitialized
         // Thus, this hack is necessary for now
 
-       
         $this->pageRenderer->setBaseUrl($baseUrl);
         $this->pageRenderer->setCharset('utf-8');
 
@@ -325,7 +320,7 @@ class FrontendEditingInitializationHook
             ConfigurationManager::class
         );
 
-        $settings = $configurationManager->getConfiguration( $configurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
+        $settings = $configurationManager->getConfiguration($configurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
         $enableDefaultRightBarValues = $settings['plugin.']['tx_frontend_editing.']['settings.']['enableDefaultRightBar.'];
         $new_key = max(array_keys($enableDefaultRightBarValues));
         $enableDefaultRightBar = $enableDefaultRightBarValues[$new_key];
@@ -352,7 +347,7 @@ class FrontendEditingInitializationHook
         // Assign the content
         $this->pageRenderer->setBodyContent($view->render());
         $parentObject->content = $this->pageRenderer->render();
-       
+
         GeneralUtility::makeInstance(\TYPO3\CMS\Core\Cache\CacheManager::class)
             ->flushCaches();
         unset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_fe.php']['hook_previewInfo']);
@@ -400,9 +395,9 @@ class FrontendEditingInitializationHook
             ConfigurationManager::class
         );
 
-        $settings = $configurationManager->getConfiguration( $configurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
+        $settings = $configurationManager->getConfiguration($configurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
         $cssFiles = $settings['plugin.']['tx_frontend_editing.']['settings.']['cssFiles.'];
-        
+
         foreach ($cssFiles as $file) {
             $this->pageRenderer->addCssFile($file);
         }
@@ -417,9 +412,9 @@ class FrontendEditingInitializationHook
             ConfigurationManager::class
         );
 
-        $settings = $configurationManager->getConfiguration( $configurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
+        $settings = $configurationManager->getConfiguration($configurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
         $jsFiles = $settings['plugin.']['tx_frontend_editing.']['settings.']['jsFiles.'];
-        
+
         foreach ($jsFiles as $file) {
             $this->pageRenderer->addJsFile($file);
         }
@@ -818,11 +813,17 @@ class FrontendEditingInitializationHook
             }
         }
 
+        $configurationManager = GeneralUtility::makeInstance(
+            ConfigurationManager::class
+        );
+        $settings = $configurationManager->getConfiguration($configurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
+        $domainTypoScriptValue = $settings['plugin.']['tx_frontend_editing.']['settings.']['domain.'];
+        $new_key = max(array_keys($domainTypoScriptValue));
+        $domainValueTs = $domainTypoScriptValue[$new_key];
+
         // Populate mounts with domains
         foreach ($mounts as $uid => &$mount) {
-
-                $mount['domain'] = 'https://fe.fach-magazin.soft2do.de';
-            
+            $mount['domain'] = $domainValueTs;
         }
 
         return $mounts;
@@ -836,12 +837,11 @@ class FrontendEditingInitializationHook
         $contentController = $this->getNewContentElementController();
 
         $wizardItems = $contentController->publicGetWizards();
-       
+
         $contentItems = [];
         $wizardTabKey = '';
         foreach ($wizardItems as $wizardKey => $wizardItem) {
             if (str_starts_with($wizardKey, 'common') || str_starts_with($wizardKey, 'container')) {
-
                 if (isset($wizardItem['header'])) {
                     $wizardTabKey = $wizardKey;
                     $contentItems[$wizardTabKey]['description'] = $wizardItem['header'];
@@ -1048,7 +1048,6 @@ class FrontendEditingInitializationHook
     protected function getNewContentElementController()
     {
         $contentController = $this->contentController;
-        
 
         return $contentController;
     }
