@@ -1,11 +1,11 @@
 {
-	"name": "mgo/frontend-editing",
+	"name": "soft2do/moduleview-draggable",
 	"type": "typo3-cms-extension",
 	"version" : "1",
-	"description": "Enable editors to work with the content in the most intuitive way possible",
+	"description": "Enable editors to work with the content in the most intuitive way possible Is Extended from Typo3 Frontend editing", 
 	"license": ["GPL-2.0-or-later"],
 	"keywords": ["TYPO3 CMS", "Frontend Editing"],
-	
+	"homepage": "https://github.com/ziedmaaloul/typo3-v10-frontend-editing",
 	"require-dev": {
 		"nimut/testing-framework": "^2.0",
 		"squizlabs/php_codesniffer": "2.*",
