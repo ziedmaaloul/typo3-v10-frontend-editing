@@ -82,8 +82,6 @@ class ContentEditableWrapperService
     /**
      * Add the proper wrapping (html tag) to make the content editable by CKEditor.
      *
-     * @return string
-     *
      * @throws \InvalidArgumentException
      */
     public function wrapContentToBeEditable(string $table, string $field, int $uid, string $content): string
@@ -140,8 +138,6 @@ class ContentEditableWrapperService
 
     /**
      * Wrap content.
-     *
-     * @return string
      *
      * @throws \InvalidArgumentException
      */
@@ -205,8 +201,6 @@ class ContentEditableWrapperService
     /**
      * Add a drop zone before/after the content.
      *
-     * @return string
-     *
      * @throws \InvalidArgumentException
      */
     public function wrapContentWithDropzone(
@@ -255,8 +249,6 @@ class ContentEditableWrapperService
     /**
      * Add a drop zone before/after the content for custom records.
      *
-     * @return string
-     *
      * @throws \InvalidArgumentException
      */
     public function wrapContentWithCustomDropzone(
@@ -295,8 +287,6 @@ class ContentEditableWrapperService
 
     /**
      * Renders the inline action icons.
-     *
-     * @return string
      */
     public function renderInlineActionIcons(string $table, bool $elementIsHidden, string $recordTitle = ''): string
     {
@@ -364,8 +354,6 @@ class ContentEditableWrapperService
 
     /**
      * Wraps an inline action icon.
-     *
-     * @return string
      */
     private function renderIconWithWrap(string $titleKey, string $iconKey, string $recordTitle = ''): string
     {
@@ -387,8 +375,6 @@ class ContentEditableWrapperService
      *
      * @param string $table
      * @param string $uid
-     *
-     * @return string
      */
     public function renderEditUrl($table, $uid): string
     {
@@ -406,8 +392,6 @@ class ContentEditableWrapperService
 
     /**
      * Render a new content element url to the backend content wizard.
-     *
-     * @return string
      *
      * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
      */
@@ -455,8 +439,6 @@ class ContentEditableWrapperService
 
     /**
      * Render the onclick return url for when open an edit window.
-     *
-     * @return string
      */
     public function renderEditOnClickReturnUrl(string $url): string
     {
@@ -479,11 +461,11 @@ class ContentEditableWrapperService
         $row = BackendUtility::getRecord($table, $uid);
         $tcaCtrl = $GLOBALS['TCA'][$table]['ctrl'];
         if ($tcaCtrl['enablecolumns']['disabled'] && $row[$tcaCtrl['enablecolumns']['disabled']] ||
-            $tcaCtrl['enablecolumns']['fe_group'] && $GLOBALS['TSFE']->simUserGroup &&
+            isset($tcaCtrl['enablecolumns']['fe_group']) && $tcaCtrl['enablecolumns']['fe_group'] && $GLOBALS['TSFE']->simUserGroup &&
             $row[$tcaCtrl['enablecolumns']['fe_group']] == $GLOBALS['TSFE']->simUserGroup ||
-            $tcaCtrl['enablecolumns']['starttime'] &&
+            isset($tcaCtrl['enablecolumns']['starttime']) && $tcaCtrl['enablecolumns']['starttime'] &&
                 $row[$tcaCtrl['enablecolumns']['starttime']] > $GLOBALS['EXEC_TIME'] ||
-            $tcaCtrl['enablecolumns']['endtime'] && $row[$tcaCtrl['enablecolumns']['endtime']] &&
+            isset($tcaCtrl['enablecolumns']['endtime']) && $tcaCtrl['enablecolumns']['endtime'] && $row[$tcaCtrl['enablecolumns']['endtime']] &&
             $row[$tcaCtrl['enablecolumns']['endtime']] < $GLOBALS['EXEC_TIME']
         ) {
             $hiddenClassName = 't3-frontend-editing__hidden-element';
@@ -496,8 +478,6 @@ class ContentEditableWrapperService
      * Returns the title label used in Backend lists.
      *
      * @param string $table of the record
-     *
-     * @return string
      */
     public function recordTitle(string $table, array $rawRecord = []): string
     {
@@ -509,8 +489,6 @@ class ContentEditableWrapperService
 
     /**
      * Returns a localized placeholder text based on label. If empty, a default text is returned.
-     *
-     * @return string
      */
     protected function getPlaceholderText(string $table, string $field): string
     {
@@ -565,8 +543,6 @@ class ContentEditableWrapperService
 
     /**
      * Return BE user from global.
-     *
-     * @return BackendUserAuthentication
      */
     protected function getBackendUser(): BackendUserAuthentication
     {
