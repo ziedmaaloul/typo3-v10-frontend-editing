@@ -171,12 +171,6 @@ class FrontendEditingPanel
             if (isset($frontendEditingConfiguration['FrontendEditingPanel']['dropzoneModifiers']) && is_array($frontendEditingConfiguration['FrontendEditingPanel']['dropzoneModifiers'])) {
                 foreach ($frontendEditingConfiguration['FrontendEditingPanel']['dropzoneModifiers'] as $classData) {
                     $hookObject = GeneralUtility::makeInstance($classData);
-                    // if (!$hookObject instanceof FrontendEditingDropzoneModifier) {
-                    //     throw new \UnexpectedValueException(
-                    //         $classData . ' must implement interface ' . FrontendEditingDropzoneModifier::class,
-                    //         1493980015
-                    //     );
-                    // }
 
                     $isWrappedWithDropzone = $hookObject->wrapWithDropzone(
                         $table,
@@ -195,8 +189,6 @@ class FrontendEditingPanel
                     $content,
                     (int) $colPos
                 );
-
-                // debug($colPos);
 
                 // If it's first content element for this column wrap with dropzone before content too
                 if (!GeneralUtility::inList(self::$columnsWithContentList, $colPos)) {

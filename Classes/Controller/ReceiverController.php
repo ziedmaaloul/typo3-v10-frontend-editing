@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace TYPO3\CMS\FrontendEditing\Controller;
 
@@ -28,7 +29,7 @@ use TYPO3\CMS\FrontendEditing\RequestPreProcess\RequestPreProcessInterface;
 /**
  * Main class for handling requests sent via Frontend Editing, and providing the information
  * properly to the DataHandler
- * Called from the Backend Endpoint
+ * Called from the Backend Endpoint.
  */
 class ReceiverController
 {
@@ -38,9 +39,7 @@ class ReceiverController
     protected $response;
 
     /**
-     * Main entrypoint, dispatches to the appropriate methods
-     *
-     * @param ServerRequestInterface $request
+     * Main entrypoint, dispatches to the appropriate methods.
      *
      * @return ResponseInterface
      */
@@ -49,7 +48,7 @@ class ReceiverController
         $this->response = new Response();
 
         $table = $request->getParsedBody()['table'];
-        $uid = (int)$request->getParsedBody()['uid'];
+        $uid = (int) $request->getParsedBody()['uid'];
 
         switch ($request->getMethod()) {
             case 'DELETE':
@@ -58,7 +57,7 @@ class ReceiverController
 
             // modifying existing or creating new records
             case 'POST':
-                $action = isset($request->getQueryParams()['action']) ? $request->getQueryParams()['action'] : "";
+                $action = isset($request->getQueryParams()['action']) ? $request->getQueryParams()['action'] : '';
                 switch ($action) {
                     case 'new':
                         $data = [];
@@ -69,22 +68,22 @@ class ReceiverController
                         $this->hideAction(
                             $table,
                             $uid,
-                            (bool)$request->getParsedBody()['hide']
+                            (bool) $request->getParsedBody()['hide']
                         );
                         break;
                     case 'move':
                         // Check if colPos is set
                         $colPos = isset($request->getParsedBody()['colPos']) ?
-                            (int)$request->getParsedBody()['colPos'] : -2;
+                            (int) $request->getParsedBody()['colPos'] : -2;
 
                         // Check if page is set
                         $page = isset($request->getQueryParams()['page']) ?
-                            (int)$request->getQueryParams()['page'] : 0;
+                            (int) $request->getQueryParams()['page'] : 0;
 
                         $this->moveAction(
                             $table,
                             $uid,
-                            (int)$request->getParsedBody()['beforeUid'],
+                            (int) $request->getParsedBody()['beforeUid'],
                             $page,
                             $colPos,
                             $request->getParsedBody()['defVals'] ?? []
@@ -108,16 +107,13 @@ class ReceiverController
             default:
                 $this->writeErrorMessage('Invalid action');
         }
+
         return $this->response;
     }
 
     /**
-     * Update a record through the data handler
+     * Update a record through the data handler.
      *
-     * @param string $table
-     * @param int $uid
-     * @param string $fieldName
-     * @param string $content
      * @throws \UnexpectedValueException
      */
     protected function updateAction(string $table, int $uid, string $fieldName, string $content)
@@ -133,7 +129,7 @@ class ReceiverController
                     $hookObject = GeneralUtility::makeInstance($className);
                     if (!($hookObject instanceof RequestPreProcessInterface)) {
                         throw new \UnexpectedValueException(
-                            $className . ' must implement interface ' . RequestPreProcessInterface::class,
+                            $className.' must implement interface '.RequestPreProcessInterface::class,
                             1274563547
                         );
                     }
@@ -148,9 +144,9 @@ class ReceiverController
         $data = [
             $table => [
                 $uid => [
-                    $fieldName => $content
-                ]
-            ]
+                    $fieldName => $content,
+                ],
+            ],
         ];
 
         try {
@@ -168,13 +164,13 @@ class ReceiverController
 
         if (empty($dataHandler->errorLog)) {
             $this->writeSuccessMessage(LocalizationUtility::translate(
-                $translateKey . 'success',
+                $translateKey.'success',
                 'FrontendEditing',
                 [$uid]
             ));
         } else {
             $this->writeErrorMessage(LocalizationUtility::translate(
-                $translateKey . 'fail',
+                $translateKey.'fail',
                 'FrontendEditing',
                 [$uid]
             ));
@@ -182,10 +178,7 @@ class ReceiverController
     }
 
     /**
-     * Delete a record through the data handler
-     *
-     * @param string $table
-     * @param int $uid
+     * Delete a record through the data handler.
      */
     protected function deleteAction(string $table, int $uid)
     {
@@ -194,9 +187,9 @@ class ReceiverController
         // Delete the record
         $dataHandler->deleteAction($table, $uid);
         if (empty($dataHandler->errorLog)) {
-            $this->writeSuccessMessage('Content deleted (' . $uid . ')');
+            $this->writeSuccessMessage('Content deleted ('.$uid.')');
         } else {
-            $this->writeErrorMessage('Content could not be deleted (' . $uid . ')');
+            $this->writeErrorMessage('Content could not be deleted ('.$uid.')');
         }
     }
 
@@ -206,9 +199,9 @@ class ReceiverController
      * Submitted info is based on a query string as described at
      * https://docs.typo3.org/m/typo3/reference-coreapi/master/en-us/ApiOverview/Examples/EditLinks/Index.html
      *
-     * @param array $edit A an array as parsed from `tt_content[-1]=new`
+     * @param array $edit    A an array as parsed from `tt_content[-1]=new`
      * @param array $defVals Default content as an array parsed from `tt_content[title]=title`
-     * @param int $pid Page ID
+     * @param int   $pid     Page ID
      *
      * @throws \InvalidArgumentException
      */
@@ -228,7 +221,7 @@ class ReceiverController
 
         if (count($edit[$table]) === 0) {
             throw new \InvalidArgumentException(
-                'Missing element information (zero items in $edit[' . $table . '])',
+                'Missing element information (zero items in $edit['.$table.'])',
                 1579267718
             );
         }
@@ -238,12 +231,12 @@ class ReceiverController
         } else {
             $defVals[$table]['pid'] = $pid;
         }
-        $uid = 'NEW' . uniqid();
+        $uid = 'NEW'.uniqid();
 
         $data = [
             $table => [
-                $uid => $defVals[$table]
-            ]
+                $uid => $defVals[$table],
+            ],
         ];
 
         $dataHandler->start($data, []);
@@ -267,11 +260,7 @@ class ReceiverController
     }
 
     /**
-     * Hide a record through the data handler
-     *
-     * @param string $table
-     * @param int $uid
-     * @param bool $hide
+     * Hide a record through the data handler.
      */
     protected function hideAction(string $table, int $uid, bool $hide)
     {
@@ -284,41 +273,31 @@ class ReceiverController
             $dataHandler->process_datamap();
 
             if (empty($dataHandler->errorLog)) {
-                $this->writeSuccessMessage('Content ' . ($hide ? 'hidden' : 'visible') . ' (' . $uid . ')');
+                $this->writeSuccessMessage('Content '.($hide ? 'hidden' : 'visible').' ('.$uid.')');
             } else {
                 $this->writeErrorMessage(
-                    'Content could not be set ' . ($hide ? 'hidden' : 'visible') . ' (' . $uid . ')'
+                    'Content could not be set '.($hide ? 'hidden' : 'visible').' ('.$uid.')'
                 );
             }
         } else {
-            $this->writeErrorMessage('Table does not have a hidden field (' . $table . ')');
+            $this->writeErrorMessage('Table does not have a hidden field ('.$table.')');
         }
     }
 
     /**
-     * Check if the current record is locked
-     *
-     * @param string $table
-     * @param int $uid
+     * Check if the current record is locked.
      */
     protected function lockedRecordAction(string $table, int $uid)
     {
         if (BackendUtility::isRecordLocked($table, $uid)) {
-            $this->writeSuccessMessage('The content "' . $uid .
+            $this->writeSuccessMessage('The content "'.$uid.
                 '" is currently edited by someone else. Do you want to save this?');
         }
     }
 
     /**
      * Move a content to another position (columnPosition, colpos)
-     * Will probably only work on tt_content (due to the special handling of colPos)
-     *
-     * @param string $table
-     * @param int $uid
-     * @param int $beforeUid
-     * @param int $pid
-     * @param int $columnPosition
-     * @param int $container
+     * Will probably only work on tt_content (due to the special handling of colPos).
      */
     public function moveAction(
         string $table,
@@ -335,7 +314,7 @@ class ReceiverController
 
         // Add mapping for which id is should be move to
         if ($beforeUid) {
-            $command[$table][$uid]['move'] = '-' . $beforeUid;
+            $command[$table][$uid]['move'] = '-'.$beforeUid;
         } else {
             // Otherwise to another page (pid)
             $command[$table][$uid]['move'] = $pid;
@@ -358,18 +337,17 @@ class ReceiverController
         $dataHandler->process_datamap();
 
         if (empty($dataHandler->errorLog)) {
-            $this->writeSuccessMessage('Content moved (uid: ' . $uid . ')');
+            $this->writeSuccessMessage('Content moved (uid: '.$uid.')');
         } else {
-            $this->writeErrorMessage('Content could not be moved (uid: ' . $uid . ')');
+            $this->writeErrorMessage('Content could not be moved (uid: '.$uid.')');
         }
     }
 
     /**
      * Get the field configuration from a field list
      * If content is rendered from "css_styled_content"
-     * Then find out which database field to save data into
+     * Then find out which database field to save data into.
      *
-     * @param string $fieldName
      * @return string
      */
     protected function sanitizeFieldName(string $fieldName): string
@@ -380,33 +358,30 @@ class ReceiverController
             $fieldNameArray = explode(' ', $fieldConfiguration[0]);
             $fieldName = $fieldNameArray[0];
         }
+
         return $fieldName;
     }
 
     /**
-     * Ensure the message is printed and encoded as JSON
-     *
-     * @param string $message
+     * Ensure the message is printed and encoded as JSON.
      */
     protected function writeSuccessMessage(string $message)
     {
         $message = [
             'success' => true,
-            'message' => $message
+            'message' => $message,
         ];
         $this->response->getBody()->write(json_encode($message));
     }
 
     /**
-     * Ensure the message is printed and encoded as JSON
-     *
-     * @param string $message
+     * Ensure the message is printed and encoded as JSON.
      */
     protected function writeErrorMessage(string $message)
     {
         $message = [
             'success' => false,
-            'message' => $message
+            'message' => $message,
         ];
         $this->response->getBody()->write(json_encode($message));
     }

@@ -72,10 +72,6 @@ class ContentObjectRendererHook
         // Extract the colPos, will match {#colPos}= or colPos=
         preg_match('/colPos\}? *= *([-]?[1-9]\d*|0)/', $conf['select.']['where'], $colPosFinding);
 
-        // if (!isset($colPosFinding[1])) {
-        //     return '';
-        // }
-
         /** @var ContentEditableWrapperService $wrapperService */
         $wrapperService = GeneralUtility::makeInstance(ContentEditableWrapperService::class);
         $defaultDropZoneParams = $GLOBALS['TSFE']->tmpl->setup_constants['plugin.']['tx_frontend_editing.']['settings.']['dropzoneDefaultParams.'];

@@ -1,5 +1,7 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace TYPO3\CMS\FrontendEditing\Hook;
 
 /*
@@ -19,7 +21,7 @@ use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Implements hooks in TemplateService
+ * Implements hooks in TemplateService.
  */
 class TemplateServiceHook
 {
@@ -27,10 +29,6 @@ class TemplateServiceHook
      * Modifies $row['include_static_file'] to include TypoScript template with TYPO3 8.7-compatible conditions.
      *
      * (I.e. not Symfony Expression language.)
-     *
-     * @param string $functionReference
-     * @param array $_params
-     * @param TemplateService $self
      *
      * @deprecated For TYPO3 8 compatibility. Will be removed in frontend_editing v2.0
      */

@@ -24,6 +24,7 @@ class ContentObjectRenderer extends \TYPO3\CMS\Frontend\ContentObject\ContentObj
     {
         $htmlParser = GeneralUtility::makeInstance(HtmlParser::class);
         $htmlParserCfg = $htmlParser->HTMLparserConfig($conf);
+
         return $htmlParser->HTMLcleaner($theValue, $htmlParserCfg[0], $htmlParserCfg[1], $htmlParserCfg[2], $htmlParserCfg[3]);
     }
 }

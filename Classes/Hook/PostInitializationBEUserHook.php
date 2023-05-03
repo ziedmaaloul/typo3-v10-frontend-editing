@@ -23,20 +23,20 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
  * Hook is called in TypoScriptFrontendController after BE user initialization
- * Used for BE user initialization if FEEDIT_BE_SESSION_KEY was passed
+ * Used for BE user initialization if FEEDIT_BE_SESSION_KEY was passed.
  */
 class PostInitializationBEUserHook implements SingletonInterface
 {
     /**
      * Change to true if tried to initialize session and fail,
-     * so we don't get loop
+     * so we don't get loop.
      *
      * @var bool
      */
     private $attempt = false;
 
     /**
-     * Initialize BE user if session key is valid
+     * Initialize BE user if session key is valid.
      */
     public function initializeBackendUser(array $params, TypoScriptFrontendController $parentOject)
     {
@@ -46,13 +46,13 @@ class PostInitializationBEUserHook implements SingletonInterface
         ) {
             $this->attempt = true;
             $sessionParts = GeneralUtility::trimExplode('-', GeneralUtility::_GP('FEEDIT_BE_SESSION_KEY'));
-            $secret = md5(($sessionParts[0] . '/' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']));
+            $secret = md5(($sessionParts[0].'/'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']));
 
-            if ($secret === (string)$sessionParts[1]) {
+            if ($secret === (string) $sessionParts[1]) {
                 $_COOKIE[BackendUserAuthentication::getCookieName()] = $sessionParts[0];
                 if (isset($_SERVER['HTTP_COOKIE'])) {
-                    $_SERVER['HTTP_COOKIE'] .= ';' . BackendUserAuthentication::getCookieName() .
-                        '=' . $sessionParts[0];
+                    $_SERVER['HTTP_COOKIE'] .= ';'.BackendUserAuthentication::getCookieName().
+                        '='.$sessionParts[0];
                 }
 
                 // From parent method, we need to make sure cookie is set

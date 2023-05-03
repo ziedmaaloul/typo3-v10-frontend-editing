@@ -1,5 +1,7 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace TYPO3\CMS\FrontendEditing\EditingPanel;
 
 /*
@@ -16,15 +18,16 @@ namespace TYPO3\CMS\FrontendEditing\EditingPanel;
  */
 
 /**
- * Allow to manipulate with content before wrap
+ * Allow to manipulate with content before wrap.
  */
 interface FrontendEditingDropzoneModifier
 {
     /**
-     * @param string $table DB table name
-     * @param int $editUid Content uid
-     * @param array $dataArr Content data array
+     * @param string $table   DB table name
+     * @param int    $editUid Content uid
+     * @param array  $dataArr Content data array
      * @param string $content HTML content of element
+     *
      * @return bool TRUE if content was wrapped
      */
     public function wrapWithDropzone(
