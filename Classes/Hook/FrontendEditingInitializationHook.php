@@ -325,7 +325,21 @@ class FrontendEditingInitializationHook
         $new_key = max(array_keys($enableDefaultRightBarValues));
         $enableDefaultRightBar = $enableDefaultRightBarValues[$new_key];
 
+         // Start Working On Primary Color
+        $primaryColorValues = $settings['plugin.']['tx_frontend_editing.']['settings.']['defaultColors.']['primaryColor.'];
+        $newKeyPrimaryColor = max(array_keys($primaryColorValues));
+        $primaryColor = $primaryColorValues[$newKeyPrimaryColor];
+        // End Working On Primary Color
+
+        // Start Working On Secondary Color
+        $secondaryColorValues = $settings['plugin.']['tx_frontend_editing.']['settings.']['defaultColors.']['secondaryColor.'];
+        $newKeysecondaryColor = max(array_keys($secondaryColorValues));
+        $secondaryColor = $secondaryColorValues[$newKeysecondaryColor];
+        // End Working On Secondary Color
+        
         $view->assignMultiple([
+            'primaryColor' => $primaryColor,
+            'secondaryColor' => $secondaryColor,
             'enableDefaultRightBar' => $enableDefaultRightBar,
             'overlayOption' => $GLOBALS['BE_USER']->uc['frontend_editing_overlay'],
             'currentUser' => $GLOBALS['BE_USER']->user,
