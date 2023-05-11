@@ -38,6 +38,10 @@ plugin.tx_frontend_editing {
     settings {
         enableDefaultRightBar.10 = 1
         domain.10 = http://fe.local/
+        defaultColors{
+            primaryColor.0=#0089C5
+            secondaryColor.0=#A3D10C
+        }
         cssFiles{
             1 = EXT:frontend_editing/Resources/Public/Css/frontend_editing.css
             2 = EXT:backend/Resources/Public/Css/backend.css
