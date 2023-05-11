@@ -23,19 +23,21 @@ define([
     './Notification',
     './Modal',
     './Utils/TranslatorLoader',
-    './Utils/Logger'
-], function createGuiModule (
+    './Utils/Logger',
+], function createGuiModule(
     $,
     FrontendEditing,
     Editor,
     Notification,
     Modal,
     TranslatorLoader,
-    Logger
-) {
+    Logger,
+)
+{
     'use strict';
 
     var log = Logger('FEditing:GUI');
+
     log.trace('--> createGuiModule');
 
     var translateKeys = {
@@ -49,23 +51,27 @@ define([
         confirmChangeSiteRootWithChange: 'notifications.unsaved-changes',
     };
 
-    var translator = TranslatorLoader.useTranslator('gui', function reload (t) {
+    var translator = TranslatorLoader.useTranslator('gui', function reload(t)
+    {
         translateKeys = $.extend(translateKeys, t.getKeys());
     }).translator;
 
-    function translate () {
+    function translate()
+    {
         return translator.translate.apply(translator, arguments);
     }
 
 
     // Extend FrontendEditing with additional events
     var events = {
-        LEFT_PANEL_TOGGLE: 'LEFT_PANEL_TOGGLE'
+        LEFT_PANEL_TOGGLE: 'LEFT_PANEL_TOGGLE',
     };
 
     // Add custom events to FrontendEditing
-    for (var key in events) {
-        if (!events.hasOwnProperty(key)) {
+    for (var key in events)
+    {
+        if (!events.hasOwnProperty(key))
+        {
             continue;
         }
 
@@ -116,14 +122,20 @@ define([
 
     var $showHiddenItemsButton;
 
-    var $itemCounter, $saveButton, $discardButton;
+    var $itemCounter,
+        $saveButton,
+        $discardButton;
     var $fullViewButton;
 
     var $treeRefreshButton;
     var $searchTreeInput;
 
-    var $leftBarOpenButton, $rightBarOpenButton;
-    var $rightBar, $leftBar, $topBar, $ckeditorBar;
+    var $leftBarOpenButton,
+        $rightBarOpenButton;
+    var $rightBar,
+        $leftBar,
+        $topBar,
+        $ckeditorBar;
 
     var $topBarItems;
 
@@ -138,10 +150,13 @@ define([
 
     var $ckeditorBarWrapper;
 
-    var $topRightTitle, $topRightBar;
-    var $topLeftTitle, $topLeftBar;
+    var $topRightTitle,
+        $topRightBar;
+    var $topLeftTitle,
+        $topLeftBar;
 
-    function init (options) {
+    function init(options)
+    {
         log.info('init', options);
 
         findElements();
@@ -157,7 +172,8 @@ define([
         loadPageIntoIframe(options.iframeUrl, editorConfigurationUrl);
     }
 
-    function findElements () {
+    function findElements()
+    {
         $iframeWrapper = $('.t3-frontend-editing__iframe-wrapper');
         $iframe = $iframeWrapper.find('iframe');
 
@@ -189,7 +205,7 @@ define([
         $siteRootWrapper = $('.t3-frontend-editing__page-site-root-wrapper');
         $searchButton = $('.search-button');
         $treeFilterWrapper = $(
-            '.t3-frontend-editing__page-tree-filter-wrapper'
+            '.t3-frontend-editing__page-tree-filter-wrapper',
         );
         $ckeditorBarWrapper = $('.t3-frontend-editing__ckeditor-bar__wrapper');
 
@@ -200,31 +216,36 @@ define([
         $topLeftBar = $('.t3-frontend-editing__top-bar-left');
     }
 
-    function animate ($element, prop, completeCallback) {
+    function animate($element, prop, completeCallback)
+    {
         $element
             .stop()
             .animate(prop, pushDuration, pushEasing, completeCallback);
     }
 
-    function initListeners () {
-        F.on(F.UPDATE_CONTENT_COMPLETE, function showUpdateSuccess (response) {
+    function initListeners()
+    {
+        F.on(F.UPDATE_CONTENT_COMPLETE, function showUpdateSuccess(response)
+        {
             Notification.success(
                 response.message,
-                translate(translateKeys.updatedContentTitle)
+                translate(translateKeys.updatedContentTitle),
             );
         });
 
-        F.on(F.UPDATE_PAGES_COMPLETE, function showUpdateSuccess (response) {
+        F.on(F.UPDATE_PAGES_COMPLETE, function showUpdateSuccess(response)
+        {
             Notification.success(
                 response.message,
-                translate(translateKeys.updatedPageTitle)
+                translate(translateKeys.updatedPageTitle),
             );
         });
 
-        F.on(F.REQUEST_ERROR, function showRequestError (response) {
+        F.on(F.REQUEST_ERROR, function showRequestError(response)
+        {
             Notification.error(
                 response.message,
-                translate(translateKeys.updateRequestErrorTitle)
+                translate(translateKeys.updateRequestErrorTitle),
             );
         });
 
@@ -232,7 +253,8 @@ define([
 
         F.on(F.CONTENT_CHANGE, updateSaveItemsButtons);
 
-        $iframe.on('load', function prepareIframe () {
+        $iframe.on('load', function prepareIframe()
+        {
             log.debug('iframe on load', $iframe[0].src);
             initEditorInIframe(editorConfigurationUrl);
 
@@ -240,10 +262,12 @@ define([
         });
     }
 
-    function updateSaveItemsButtons () {
+    function updateSaveItemsButtons()
+    {
         log.trace('updateSaveItemsButtons');
 
-        if (storage.isEmpty()) {
+        if (storage.isEmpty())
+        {
             log.debug('disable save items buttons');
 
             $discardButton.prop('disabled', true);
@@ -251,7 +275,9 @@ define([
             $discardButton.addClass('btn-inactive');
             $saveButton.addClass('btn-inactive');
             $itemCounter.html('');
-        } else {
+        }
+        else
+        {
             log.debug('enable save items buttons');
 
             $discardButton.prop('disabled', false);
@@ -262,43 +288,50 @@ define([
         }
     }
 
-    function save () {
+    function save()
+    {
         log.info('save items');
 
-        if (storage.isEmpty()) {
+        if (storage.isEmpty())
+        {
             log.warn('unable to save items without data in storage');
 
             Notification.warning(
                 translate(translateKeys.saveWithoutChange),
-                translate(translateKeys.saveWithoutChangeTitle)
+                translate(translateKeys.saveWithoutChangeTitle),
             );
             // reset button states
             updateSaveItemsButtons();
+
             return;
         }
 
         F.saveAll();
     }
 
-    function discardSaveItems () {
+    function discardSaveItems()
+    {
         log.debug('discardSaveItems');
 
-        if (!storage.isEmpty()) {
+        if (!storage.isEmpty())
+        {
             Modal.confirm(
                 translate(translateKeys.confirmDiscardChanges), {
-                    yes: function () {
+                    yes()
+                    {
                         log.info('discard save items');
 
                         storage.clear();
                         F.refreshIframe();
                         F.trigger(F.CONTENT_CHANGE);
-                    }
-                }
+                    },
+                },
             );
         }
     }
 
-    function bindActions () {
+    function bindActions()
+    {
         // panel states t=left, y=right, u=top
         var t = 0;
         var y = 0;
@@ -308,18 +341,21 @@ define([
         $discardButton.on('click', discardSaveItems);
 
         // Add check for page tree navigation
-        $siteRootButton.click(function toggleTreeNavigation () {
+        $siteRootButton.click(function toggleTreeNavigation()
+        {
             log.info('toggle tree navigation');
 
             $siteRootWrapper.toggle();
         });
-        $searchButton.click(function toggleSearchFilter () {
+        $searchButton.click(function toggleSearchFilter()
+        {
             log.info('toggle search filter');
 
             $treeFilterWrapper.toggle();
         });
 
-        $fullViewButton.on('click', function toggleFullscreen () {
+        $fullViewButton.on('click', function toggleFullscreen()
+        {
             log.info('toggle fullscreen [t, y, u]', t, y, u);
 
             t = ++t & 1;
@@ -327,7 +363,7 @@ define([
             u = ++u & 1;
 
             animate($topBar, {
-                top: topBarPosition[u]
+                top: topBarPosition[u],
             });
 
             $iframeWrapper.toggleClass('full-view');
@@ -335,30 +371,37 @@ define([
             $ckeditorBar.toggleClass('full-view-active');
             $ckeditorBarWrapper.toggleClass('full-view-active');
 
-            if ($rightBar.hasClass('open')) {
+            if ($rightBar.hasClass('open'))
+            {
                 animate($rightBar, {
-                    right: rightBarPosition[t]
+                    right: rightBarPosition[t],
                 });
-            } else {
+            }
+            else
+            {
                 $rightBar.toggleClass('closed');
             }
 
-            if ($leftBar.hasClass('open')) {
+            if ($leftBar.hasClass('open'))
+            {
                 animate($leftBar, {
-                    left: leftBarPosition[y]
+                    left: leftBarPosition[y],
                 });
-            } else {
+            }
+            else
+            {
                 $leftBar.toggleClass('closed');
             }
 
             storage.addItem('fullScreenState', {
-                isActive: $fullViewButton.hasClass('full-view-active')
+                isActive: $fullViewButton.hasClass('full-view-active'),
             });
         });
 
 
         $tree.find('li')
-            .click(function changeWebPage () {
+            .click(function changeWebPage()
+            {
                 var linkUrl = $(this)
                     .data('url');
 
@@ -368,11 +411,12 @@ define([
                 F.navigate(linkUrl);
             });
 
-        $topRightTitle.on('click', function toggleRightBar () {
+        $topRightTitle.on('click', function toggleRightBar()
+        {
             log.info('toggle right bar', t);
 
             $rightBarOpenButton.toggleClass(
-                'icon-icons-tools-settings icon-icons-arrow-double'
+                'icon-icons-tools-settings icon-icons-arrow-double',
             );
             $topRightBar.toggleClass('push-toleft');
             $iframeWrapper.toggleClass('push-toleft-iframe');
@@ -380,20 +424,21 @@ define([
 
             t = ++t & 1;
             animate($rightBar, {
-                right: rightBarPosition[t]
+                right: rightBarPosition[t],
             });
             animate($ckeditorBar, {
-                right: ckeditorBarPositionRight[t]
+                right: ckeditorBarPositionRight[t],
             });
 
             updateRightPanelState();
         });
 
-        $topLeftTitle.on('click', function toggleLeftBar () {
+        $topLeftTitle.on('click', function toggleLeftBar()
+        {
             log.info('toggle left bar', t);
 
             $leftBarOpenButton.toggleClass(
-                'icon-icons-site-tree icon-icons-arrow-double'
+                'icon-icons-site-tree icon-icons-arrow-double',
             );
 
             // save state
@@ -406,19 +451,22 @@ define([
             y = ++y & 1;
 
             animate($ckeditorBar, {
-                left: ckeditorBarPositionLeft[y]
+                left: ckeditorBarPositionLeft[y],
             });
 
             animate($leftBar, {
-                left: leftBarPosition[y]
-            }, function triggerLeftPanelToggle () {
+                left: leftBarPosition[y],
+            }, function triggerLeftPanelToggle()
+            {
                 var $this = $(this);
+
                 F.trigger(F.LEFT_PANEL_TOGGLE, $this.hasClass('open'));
             });
         });
 
         $(document)
-            .ready(function updateCloseLabel () {
+            .ready(function updateCloseLabel()
+            {
                 log.trace('document content loaded, update close label');
 
                 // Doesn't do anything since it is always true
@@ -427,21 +475,25 @@ define([
                     $rightBar.hasClass('open') || $leftBar.hasClass('open')) {
 */
 
-                if (!$leftBar.hasClass('open')) {
+                if (!$leftBar.hasClass('open'))
+                {
                     $ckeditorBar.addClass('left-closed');
                 }
-                if (!$rightBar.hasClass('open')) {
+                if (!$rightBar.hasClass('open'))
+                {
                     $ckeditorBar.addClass('right-closed');
                 }
+
                 /*
                 }
 */
             });
 
         $('.t3-frontend-editing__page-edit, ' +
-          '.t3-frontend-editing__page-new, ' +
-          '.t3-frontend-editing__page-seo_module')
-            .click(function loadEditOrCreatePageModal () {
+            '.t3-frontend-editing__page-new, ' +
+            '.t3-frontend-editing__page-seo_module')
+            .click(function loadEditOrCreatePageModal()
+            {
                 var url = $(this)
                     .data('url');
 
@@ -450,7 +502,8 @@ define([
                 F.loadInModal(url);
             });
 
-        $showHiddenItemsButton.click(function toggleShowHiddenItems () {
+        $showHiddenItemsButton.click(function toggleShowHiddenItems()
+        {
             var $this = $(this);
             var url = $this.data('url');
             var parameter = 'show_hidden_items=';
@@ -463,17 +516,23 @@ define([
 
             // Change the state of visible/hidden GET parameter
             var changedUrlState = '';
-            if (url.indexOf(parameterOn) >= 0) {
+
+            if (url.indexOf(parameterOn) >= 0)
+            {
                 changedUrlState = url.replace(parameterOn, parameterOff);
-            } else if (url.indexOf(parameterOff) >= 0) {
+            }
+            else if (url.indexOf(parameterOff) >= 0)
+            {
                 changedUrlState = url.replace(parameterOff, parameterOn);
-            } else {
+            }
+            else
+            {
                 log.warn(
                     'unable to toggle url parameter to show hidden items',
-                    parameter
+                    parameter,
                 );
 
-                //add parameter as try and error solution, nothing to lose
+                // add parameter as try and error solution, nothing to lose
                 changedUrlState = url +
                     (url.indexOf('?') >= 0 ? '&' : '?') +
                     parameterOn;
@@ -484,7 +543,8 @@ define([
         });
 
         $mediaDevices.find('span')
-            .on('click', function changeIFrameSize () {
+            .on('click', function changeIFrameSize()
+            {
                 var $this = $(this);
 
                 log.info('changeIFrameSize', this);
@@ -496,12 +556,13 @@ define([
 
                 $('.t3-frontend-editing__iframe-wrapper iframe')
                     .animate({
-                        'width': $this.data('width')
+                        width: $this.data('width'),
                     });
             });
 
         $accordions.find('.trigger, .element-title')
-            .on('click', function toggleAccordion () {
+            .on('click', function toggleAccordion()
+            {
                 var $this = $(this);
 
                 log.info('toggleAccordion', this);
@@ -516,7 +577,8 @@ define([
             });
 
         $accordions.find('.grid')
-            .on('click', function changeAccordionGridLayout () {
+            .on('click', function changeAccordionGridLayout()
+            {
                 log.info('changeAccordionGridLayout', this);
 
                 $(this)
@@ -527,7 +589,8 @@ define([
             });
 
         $topBarItems.find('.dropdown-toggle')
-            .on('click', function toggleDropDownMenu () {
+            .on('click', function toggleDropDownMenu()
+            {
                 var $this = $(this);
 
                 log.info('toggleDropDownMenu', this);
@@ -540,7 +603,8 @@ define([
 
 
         $accordions.find('.list-view')
-            .on('click', function changeAccordionListLayout () {
+            .on('click', function changeAccordionListLayout()
+            {
                 log.info('changeAccordionListLayout', this);
 
                 $(this)
@@ -551,22 +615,26 @@ define([
             });
 
 
-        //TODO: move to init state function since it is not an action binding
+        // TODO: move to init state function since it is not an action binding
         animate($rightBar, {right: rightBarPosition[t]});
 
         // Filter event
-        $searchTreeInput.on('keyup', function triggerTreeFilter (event) {
+        $searchTreeInput.on('keyup', function triggerTreeFilter(event)
+        {
             log.trace('triggerTreeFilter', event);
         });
 
         // TODO find better explanation
         // Allow external scripts to use iframeUrl when main window url
         // is updated by script (history.pushState)
-        $iframe.on('update-url', function updateIFrameUrl (event, url) {
+        $iframe.on('update-url', function updateIFrameUrl(event, url)
+        {
             log.debug('updateIFrameUrl', event, url);
 
-            if (url.indexOf('frontend_editing') === -1) {
+            if (url.indexOf('frontend_editing') === -1)
+            {
                 var delimiter = (url.indexOf('?') === -1 ? '?' : '&');
+
                 url += delimiter + 'frontend_editing=true';
             }
 
@@ -576,41 +644,53 @@ define([
         });
     }
 
-    function initGuiStates () {
+    function initGuiStates()
+    {
         var states = storage.getAllData();
-        if (typeof states !== 'object') {
+
+        if (typeof states !== 'object')
+        {
             return;
         }
 
-        if (states.leftPanelOpen === true) {
+        if (states.leftPanelOpen === true)
+        {
             // Trigger open left panel
             $leftBarOpenButton.trigger('click');
         }
 
-        if (states.rightPanelState) {
+        if (states.rightPanelState)
+        {
             // Init right panel state
-            if (states.rightPanelState.isVisible) {
+            if (states.rightPanelState.isVisible)
+            {
                 $rightBarOpenButton.trigger('click');
             }
 
-            for (var wizard in states.rightPanelState.wizards) {
-                if (!states.rightPanelState.wizards.hasOwnProperty(wizard)) {
+            for (var wizard in states.rightPanelState.wizards)
+            {
+                if (!states.rightPanelState.wizards.hasOwnProperty(wizard))
+                {
                     continue;
                 }
 
                 var $wizard = $('[data-wizard-type="' + wizard + '"]');
-                if ($wizard.length === 0) {
+
+                if ($wizard.length === 0)
+                {
                     log.warn('No wizard of following type found', wizard);
 
                     continue;
                 }
 
-                if (states.rightPanelState.wizards[wizard].isListView) {
+                if (states.rightPanelState.wizards[wizard].isListView)
+                {
                     $wizard
                         .find('.list-view')
                         .trigger('click');
                 }
-                if (states.rightPanelState.wizards[wizard].isExpanded) {
+                if (states.rightPanelState.wizards[wizard].isExpanded)
+                {
                     $wizard
                         .find('.trigger')
                         .trigger('click');
@@ -618,21 +698,24 @@ define([
             }
         }
 
-        if (states.fullScreenState && states.fullScreenState.isActive) {
+        if (states.fullScreenState && states.fullScreenState.isActive)
+        {
             $fullViewButton.trigger('click');
         }
     }
 
-    function updateRightPanelState () {
+    function updateRightPanelState()
+    {
         log.trace('updateRightPanelState', $rightBar);
 
         var rightPanelState = {
             isVisible: $rightBar.hasClass('open'),
-            wizards: {}
+            wizards: {},
         };
 
         $('.accordion .trigger')
-            .each(function fetchRightPanelWizardStates () {
+            .each(function fetchRightPanelWizardStates()
+            {
                 log.trace('fetchRightPanelWizardStates', this);
 
                 var $this = $(this);
@@ -640,11 +723,13 @@ define([
                 var isExpanded = $this.hasClass('active');
                 var isListView = accordionContainer.hasClass('accordion-list');
 
-                if (isExpanded || isListView) {
+                if (isExpanded || isListView)
+                {
                     var containerType = accordionContainer.data('wizard-type');
+
                     rightPanelState.wizards[containerType] = {
                         isExpanded: isExpanded,
-                        isListView: isListView
+                        isListView: isListView,
                     };
                 }
             });
@@ -652,17 +737,19 @@ define([
         storage.addItem('rightPanelState', rightPanelState);
     }
 
-    function loadPageIntoIframe (url) {
+    function loadPageIntoIframe(url)
+    {
         log.debug('loadPageIntoIframe', url);
 
         $iframe.attr({
-            'src': url
+            src: url,
         });
 
         iframeUrl = url;
     }
 
-    function initEditorInIframe (editorConfigurationUrl) {
+    function initEditorInIframe(editorConfigurationUrl)
+    {
         log.trace('initEditorInIframe', editorConfigurationUrl);
 
         // Avoid inception issue for example when link clicked redirects to a
@@ -672,22 +759,27 @@ define([
 
         document.title = $iframe[0].contentDocument.title;
 
-        if (!iframeDocumentLocation.search.includes('frontend_editing=true')) {
+        if (!iframeDocumentLocation.search.includes('frontend_editing=true'))
+        {
             log.debug(
                 '"frontend_editing=true" parameter missing',
-                iframeDocumentLocation.search
+                iframeDocumentLocation.search,
             );
 
             // history.replaceState(history.state, document.title, url);
 
-            if (!url.includes('?')) {
-                url = url + '?';
-            } else if (url.slice(url.length - 1) !== '&') {
-                url = url + '&';
+            if (!url.includes('?'))
+            {
+                url += '?';
+            }
+            else if (url.slice(url.length - 1) !== '&')
+            {
+                url += '&';
             }
 
             loadPageIntoIframe(url + 'frontend_editing=true');
             hideLoadingScreen();
+
             return;
         }
 
@@ -696,7 +788,8 @@ define([
         // check if LocalStorage contains any changes prior to iFrame reload
         var items = storage.getSaveItems();
 
-        if (items.count()) {
+        if (items.count())
+        {
             items.forEach(restoreInlineEditorContent);
         }
 
@@ -707,17 +800,23 @@ define([
         hideLoadingScreen();
     }
 
-    function restoreInlineEditorContent (item) {
+    function restoreInlineEditorContent(item)
+    {
         log.trace('restoreInlineEditorContent', item);
 
         var content;
 
-        if (item.inlineElement) {
+        if (item.inlineElement)
+        {
             content = item.text;
-        } else if (item.hasCkeditorConfiguration) {
+        }
+        else if (item.hasCkeditorConfiguration)
+        {
             content = CKEDITOR.instances[item.editorInstance]
                 .getData();
-        } else {
+        }
+        else
+        {
             content = CKEDITOR.instances[item.editorInstance]
                 .editable()
                 .getText();
@@ -727,19 +826,22 @@ define([
 
         $iframe.contents()
             .find('[contenteditable=\'true\']')
-            .each(function checkAndRestoreEditableContent () {
+            .each(function checkAndRestoreEditableContent()
+            {
                 log.trace('checkAndRestoreEditableContent', this);
 
                 var $this = $(this);
                 var dataSet = $this.data();
+
                 if (String(dataSet.uid) === String(item.uid) &&
                     dataSet.field === item.field &&
                     dataSet.table === item.table
-                ) {
+                )
+                {
                     log.debug(
                         'restore editable content',
                         this,
-                        content
+                        content,
                     );
 
                     $this.html(content);
@@ -747,13 +849,16 @@ define([
             });
     }
 
-    function saveScrollPosition () {
+    function saveScrollPosition()
+    {
         sessionStorage.scrollTop = $iframe.contents()
             .scrollTop();
     }
 
-    function restoreScrollPosition () {
-        if (sessionStorage.scrollTop !== 'undefined') {
+    function restoreScrollPosition()
+    {
+        if (sessionStorage.scrollTop !== 'undefined')
+        {
             log.debug('restore scroll position', sessionStorage.scrollTop);
 
             $iframe.contents()
@@ -762,7 +867,8 @@ define([
         }
     }
 
-    function updateHistoryState (url) {
+    function updateHistoryState(url)
+    {
         log.trace('updateHistoryState', url);
 
         url = url
@@ -772,7 +878,8 @@ define([
             .replace('&no_cache=1', '')
             .replace('no_cache=1', '');
 
-        if (url.slice(url.length - 1) === '?') {
+        if (url.slice(url.length - 1) === '?')
+        {
             url = url.slice(0, -1);
         }
 
@@ -780,22 +887,31 @@ define([
         history.replaceState(history.state, document.title, url);
     }
 
-    function initCustomLoadedContent (customElement) {
+    function initCustomLoadedContent(customElement)
+    {
         log.debug('initCustomLoadedContent', customElement);
 
         Editor.init(customElement, editorConfigurationUrl, resourcePath);
     }
 
-    function refreshIframe () {
+    function refreshIframe()
+    {
         log.debug('refreshIframe');
-
         saveScrollPosition();
-        loadPageIntoIframe(iframeUrl, editorConfigurationUrl);
+        // loadPageIntoIframe(iframeUrl, editorConfigurationUrl);
+        // reload url+ remove 'fe_editing_already_loaded'
+        var pos = iframeUrl.indexOf('&fe_editing_already_loaded');
+        var newIframeUrl = iframeUrl.substring(0, pos);
+
+        window.location.href = newIframeUrl;
     }
 
-    function showLoadingScreen () {
-        if (loadingScreenLevel === 0) {
-            $loadingScreen.fadeIn('fast', function showLoadingScreen () {
+    function showLoadingScreen()
+    {
+        if (loadingScreenLevel === 0)
+        {
+            $loadingScreen.fadeIn('fast', function showLoadingScreen()
+            {
                 $loadingScreen.removeClass(CLASS_HIDDEN);
             });
         }
@@ -803,31 +919,36 @@ define([
         loadingScreenLevel++;
     }
 
-    function hideLoadingScreen () {
+    function hideLoadingScreen()
+    {
         loadingScreenLevel--;
 
-        if (loadingScreenLevel <= 0) {
+        if (loadingScreenLevel <= 0)
+        {
             loadingScreenLevel = 0;
-            $loadingScreen.fadeOut('slow', function hideLoadingScreen () {
+            $loadingScreen.fadeOut('slow', function hideLoadingScreen()
+            {
                 $loadingScreen.addClass(CLASS_HIDDEN);
             });
         }
     }
 
-    function getIframe () {
+    function getIframe()
+    {
         return $iframe;
     }
 
     /**
-	 * Shows a success notification
+     * Shows a success notification
      * @param message
      * @param title
-	 * @deprecated use TYPO3/CMS/FrontendEditing/Notification instead
+     * @deprecated use TYPO3/CMS/FrontendEditing/Notification instead
      */
-    function showSuccess (message, title) {
+    function showSuccess(message, title)
+    {
         log.warn(
             'showSuccess: Deprecated function call.' +
-            'Use TYPO3/CMS/FrontendEditing/Notification instead.'
+            'Use TYPO3/CMS/FrontendEditing/Notification instead.',
         );
         Notification.success(message, title);
     }
@@ -838,10 +959,11 @@ define([
      * @param title
      * @deprecated use TYPO3/CMS/FrontendEditing/Notification instead
      */
-    function showError (message, title) {
+    function showError(message, title)
+    {
         log.warn(
             'showError: Deprecated function call.' +
-            'Use TYPO3/CMS/FrontendEditing/Notification instead.'
+            'Use TYPO3/CMS/FrontendEditing/Notification instead.',
         );
         Notification.error(message, title);
     }
@@ -852,37 +974,44 @@ define([
      * @param title
      * @deprecated use TYPO3/CMS/FrontendEditing/Notification instead
      */
-    function showWarning (message, title) {
+    function showWarning(message, title)
+    {
         log.warn(
             'showWarning: Deprecated function call.' +
-            'Use TYPO3/CMS/FrontendEditing/Notification instead.'
+            'Use TYPO3/CMS/FrontendEditing/Notification instead.',
         );
         Notification.warning(message, title);
     }
 
     /**
-	 * Shows a confirm modal. If message is 'notifications.unsaved-changes' a
-	 * special "save all" button will be presented.
+     * Shows a confirm modal. If message is 'notifications.unsaved-changes' a
+     * special "save all" button will be presented.
      * @param message
      * @param callbacks
-	 * @deprecated
+     * @deprecated
      */
-    function confirm (message, callbacks) {
+    function confirm(message, callbacks)
+    {
         log.warn(
             'confirm: Deprecated function call.' +
-            'Use TYPO3/CMS/FrontendEditing/Modal instead.'
+            'Use TYPO3/CMS/FrontendEditing/Modal instead.',
         );
 
         callbacks = callbacks || {};
 
-        if (message === F.translate('notifications.unsaved-changes')) {
-            Modal.confirmNavigate(message, function save () {
-                if (typeof callbacks.yes === 'function') {
+        if (message === F.translate('notifications.unsaved-changes'))
+        {
+            Modal.confirmNavigate(message, function save()
+            {
+                if (typeof callbacks.yes === 'function')
+                {
                     F.saveAll();
                     callbacks.yes();
                 }
             }, callbacks);
-        } else {
+        }
+        else
+        {
             Modal.confirm(message, callbacks);
         }
     }
@@ -893,16 +1022,17 @@ define([
      * @param {string} url to open
      * @deprecated
      */
-    function windowOpen (url) {
+    function windowOpen(url)
+    {
         log.warn(
             'confirm: Deprecated function call.' +
-            'Use your own function instead.'
+            'Use your own function instead.',
         );
 
         var vHWin = window.open(
             url,
             'FEquickEditWindow',
-            'width=690,height=500,status=0,menubar=0,scrollbars=1,resizable=1'
+            'width=690,height=500,status=0,menubar=0,scrollbars=1,resizable=1',
         );
 
         vHWin.focus();
@@ -910,41 +1040,49 @@ define([
         return false;
     }
 
-    function siteRootChange (element) {
+    function siteRootChange(element)
+    {
         log.trace('siteRootChange', element);
 
         var linkUrl = $(element)
             .val();
 
-        if (typeof linkUrl !== 'string' && linkUrl !== '') {
+        if (typeof linkUrl !== 'string' && linkUrl !== '')
+        {
             return;
         }
 
         linkUrl += '?FEEDIT_BE_SESSION_KEY=' + F.getBESessionId();
 
         var callbacks = {
-            yes: function () {
+            yes()
+            {
                 log.debug('change site root to', linkUrl);
                 window.location.href = linkUrl;
             },
-            no: function () {
+            no()
+            {
                 element.selectedIndex = 0;
-            }
+            },
         };
 
-        if (storage.isEmpty()) {
+        if (storage.isEmpty())
+        {
             Module.confirm(
                 translate(translateKeys.confirmChangeSiteRoot),
-                callbacks
+                callbacks,
             );
-        } else {
+        }
+        else
+        {
             Module.confirmNavigate(
                 translate(translateKeys.confirmChangeSiteRootWithChange),
-                function save () {
+                function save()
+                {
                     F.saveAll();
                     callbacks.yes();
                 },
-            	callbacks
+                callbacks,
             );
         }
     }
