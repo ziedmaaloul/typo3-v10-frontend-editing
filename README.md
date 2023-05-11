@@ -32,6 +32,20 @@ For all kind of documentation which covers install to how to develop the extensi
 	}
 enableDefaultRightBar is To enable or Disable the default style
 
+
+
+### To Override on Default Color
+
+
+    plugin.tx_frontend_editing {
+		settings {
+			defaultColors{
+			    primaryColor.10=red
+			    secondaryColor.10=green
+        		}
+		}
+	}
+	
 ### To add Drop Zone Area
 Import Core In html
    
