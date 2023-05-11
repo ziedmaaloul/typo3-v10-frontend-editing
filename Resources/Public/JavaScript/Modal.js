@@ -20,17 +20,19 @@ define([
     'TYPO3/CMS/Backend/Modal',
     'TYPO3/CMS/Backend/Severity',
     './Utils/TranslatorLoader',
-    './Utils/Logger'
-], function ModalFactory (
+    './Utils/Logger',
+], function ModalFactory(
     $,
     T3Modal,
     Severity,
     TranslatorLoader,
-    Logger
-) {
+    Logger,
+)
+{
     'use strict';
 
     var log = Logger('FEditing:Component:Widget:Modal');
+
     log.trace('--> ModalFactory');
 
     // simple ponyfill
@@ -42,7 +44,7 @@ define([
         body: '.t3js-modal-body',
         footer: '.t3js-modal-footer',
         iframe: '.t3js-modal-iframe',
-        iconPlaceholder: '.t3js-modal-icon-placeholder'
+        iconPlaceholder: '.t3js-modal-icon-placeholder',
     };
 
     var translateKeys = {
@@ -57,18 +59,20 @@ define([
     };
 
     var translator = TranslatorLoader
-        .useTranslator('modal', function reload (t) {
+        .useTranslator('modal', function reload(t)
+        {
             translateKeys = $.extend(translateKeys, t.getKeys());
         }).translator;
 
-    function translate () {
+    function translate()
+    {
         return translator.translate.apply(translator, arguments);
     }
 
     var builder = {
         constraints: {
-            'required': 1,
-            'func': 2,
+            required: 1,
+            func: 2,
             'int': 4,
         },
 
@@ -76,40 +80,88 @@ define([
         button: createButtonBuilder,
     };
 
-    function createModalBuilder (title, message) {
+    function testConstraints(constraints, variable, name)
+    {
+        log.trace('test constraints', constraints, typeof variable, name);
+
+        if (!constraints)
+        {
+            return;
+        }
+        if ((constraints & builder.constraints.required) !== 0)
+        {
+            if (!variable)
+            {
+                throw new TypeError(
+                    translate(translateKeys.variableNotDefined, name));
+            }
+        }
+        if ((constraints & builder.constraints.func) !== 0)
+        {
+            if (variable && typeof variable !== 'function')
+            {
+                throw new TypeError(
+                    translate(translateKeys.variableNotFunction, name));
+            }
+        }
+        if ((constraints & builder.constraints.int) !== 0)
+        {
+            if (variable && !Number.isInteger(variable))
+            {
+                // maybe to picky since it is only used as decision for design
+                // razz (flood) sys-admin with warning would be better
+                // TODO: log notice "errors" on server
+                throw new TypeError(
+                    translate(translateKeys.variableNotInteger, name));
+            }
+        }
+    }
+    function createModalBuilder(title, message)
+    {
         log.debug('builder.modal', title, message);
 
-        testConstraints(builder.constraints.required, title, 'title');
-        testConstraints(builder.constraints.required, message, 'message');
+        // testConstraints(builder.constraints.required, title, 'title');
+        // testConstraints(builder.constraints.required, message, 'message');
 
         var handleEscape = true;
-        var buttonClickListener, escapeListener, readyListener;
+        var buttonClickListener,
+            escapeListener,
+            readyListener;
 
-        function attachEscapeListener (currentModal) {
+        function attachEscapeListener(currentModal)
+        {
             log.trace('modal attach escape listener');
 
             var hasModalDismissed = false;
-            function triggerEscapeEvent () {
+
+            function triggerEscapeEvent()
+            {
                 log.debug('escape modal', escapeListener);
 
-                if (!hasModalDismissed && escapeListener) {
+                if (!hasModalDismissed && escapeListener)
+                {
                     hasModalDismissed = true;
                     escapeListener();
-                } else {
+                }
+                else
+                {
                     log.debug('Unable to escape modal.');
                 }
             }
 
-            function preventTriggerEscape () {
+            function preventTriggerEscape()
+            {
                 log.trace('modal prevent trigger escape');
 
                 hasModalDismissed = true;
             }
 
-            function handleBackdrop () {
+            function handleBackdrop()
+            {
                 log.trace('modal handle backdrop');
 
-                currentModal.on('click', function backdropDismiss (event) {
+                currentModal.on('click', function backdropDismiss(event)
+                {
                     log.debug('modal backdrop click');
 
                     event.stopPropagation();
@@ -118,9 +170,10 @@ define([
                 });
                 currentModal
                     .find(identifiers.content)
-                    .on('click', function preventClose (event) {
+                    .on('click', function preventClose(event)
+                    {
                         log.trace(
-                            'modal content clicked, prevent backdrop click'
+                            'modal content clicked, prevent backdrop click',
                         );
 
                         event.stopPropagation();
@@ -146,126 +199,162 @@ define([
             buttons: [],
             additionalCssClasses: ['t3-frontend-editing__modal'],
 
-            translateTitle: function () {
+            translateTitle()
+            {
                 log.trace('modal translate title');
 
                 this.title = translate(this.title);
+
                 return this;
             },
-            setSeverity: function (severity) {
+            setSeverity(severity)
+            {
                 log.trace('modal set severity', severity);
 
                 testConstraints(builder.constraints.int, severity, 'severity');
                 this.severity = severity;
+
                 return this;
             },
-            onReady: function (listener) {
+            onReady(listener)
+            {
                 log.trace('modal on ready', listener);
 
                 testConstraints(builder.constraints.func, listener, 'listener');
                 // bad callback naming, callback if modal is ready
-                /*eslint-disable-next-line id-denylist*/
+                /* eslint-disable-next-line id-denylist*/
                 this.callback = listener;
                 readyListener = listener;
+
                 return this;
             },
-            onButtonClick: function (listener) {
+            onButtonClick(listener)
+            {
                 log.trace('modal on button clicked', listener);
 
                 testConstraints(builder.constraints.func, listener, 'listener');
                 buttonClickListener = listener;
+
                 return this;
             },
-            onEscape: function (listener) {
+            onEscape(listener)
+            {
                 log.trace('modal on escape', listener);
 
                 testConstraints(builder.constraints.func, listener, 'listener');
                 escapeListener = listener;
+
                 return this;
             },
-            preventEscape: function () {
+            preventEscape()
+            {
                 log.trace('modal stop handle escape');
 
                 handleEscape = false;
+
                 return this;
             },
-            dismissOnButtonClick: function () {
+            dismissOnButtonClick()
+            {
                 log.trace('modal dismiss on button clicked');
 
                 return this.onButtonClick(dismissModal);
             },
-            prependButton: function (button) {
+            prependButton(button)
+            {
                 log.trace('modal prepend button', button);
 
                 return this.insertButton(0, button);
             },
-            appendButton: function (button) {
+            appendButton(button)
+            {
                 log.trace('modal append button', button);
 
                 this.buttons.push(button);
+
                 return this;
             },
-            insertButton: function (index, button) {
+            insertButton(index, button)
+            {
                 log.trace('modal insert button', index, button);
 
                 this.buttons.splice(index, 0, button);
+
                 return this;
             },
 
-            show: function () {
+            show()
+            {
                 log.trace('modal show', this.title);
 
                 var _currentModal = null;
 
-                //copy ready listener cause it gets reset in next func
+                // copy ready listener cause it gets reset in next func
                 var ready = readyListener;
-                this.onReady(function prepareListeners (currentModal) {
+
+                this.onReady(function prepareListeners(currentModal)
+                {
                     log.trace('modal ready', currentModal);
 
                     _currentModal = currentModal;
 
-                    if (!handleEscape) {
+                    if (!handleEscape)
+                    {
                         currentModal
                             .find(identifiers.close)
                             .hide();
                     }
 
-                    if (buttonClickListener) {
+                    if (buttonClickListener)
+                    {
                         currentModal.on('button.clicked', buttonClickListener);
                     }
 
-                    if (ready) {
+                    if (ready)
+                    {
                         ready(currentModal);
                     }
 
-                    log.debug('create modal');
-                    currentModal.modal({
-                        keyboard: handleEscape,
-                        backdrop: 'static',
-                    });
+                    // log.debug('create modal');
+                    // currentModal.modal({
+                    //     keyboard: handleEscape,
+                    //     backdrop: 'static',
+                    // });
 
-                    if (handleEscape) {
-                        attachEscapeListener(currentModal);
-                    }
+                    // if (handleEscape)
+                    // {
+                    //     attachEscapeListener(currentModal);
+                    // }
 
-                    // TODO: find better solution to add keyboard escape handler
-                    throw new Error('Prevent construct modal');
+                    // // TODO: find better solution to add keyboard escape handler
+                    // throw new Error('Prevent construct modal');
                 });
 
                 log.debug('init modal', this);
-                try {
+                try
+                {
+                    const buttons = this.buttons;
+
                     return T3Modal.advanced(this);
-                } catch (error) {
-                    if(error.message !== 'Prevent construct modal') {
-                        throw error;
-                    }
                 }
+                catch (error)
+                {
+                    console.log(error.message);
+                    throw error;
+                    // if(error.message !== 'Prevent construct modal')
+                    // {
+
+                    // }
+                }
+
+
                 return _currentModal;
-            }
+            },
         };
     }
 
-    function createButtonBuilder (name) {
+    function createButtonBuilder(name)
+    {
         log.debug('modal button', name);
 
         return {
@@ -273,98 +362,90 @@ define([
             name: name,
             active: false,
 
-            setLabel: function (label, constraints) {
+            setLabel(label, constraints)
+            {
                 log.trace('modal button set label', label, constraints);
 
                 testConstraints(constraints, label, 'label');
                 this.text = label;
+
                 return this;
             },
-            translateLabel: function () {
+            translateLabel()
+            {
                 log.trace('modal button translate label');
 
                 this.text = translate(this.text);
                 testConstraints(
                     builder.constraints.required,
                     this.text,
-                    'translate(this.text)'
+                    'translate(this.text)',
                 );
+
                 return this;
             },
-            setActive: function () {
+            setActive()
+            {
                 log.trace('modal button set active');
 
                 this.active = true;
+
                 return this;
             },
-            onClick: function (clickCallback, constraints) {
+            onClick(clickCallback, constraints)
+            {
                 log.trace('modal button set click callback');
 
                 testConstraints(constraints, clickCallback, 'clickCallback');
                 this.trigger = clickCallback;
+
                 return this;
             },
-            setSeverity: function (severity) {
+            setSeverity(severity)
+            {
                 log.trace('modal button set severity', severity);
 
                 testConstraints(builder.constraints.int, severity, 'severity');
                 this.severity = severity;
+
                 return this;
             },
-            setVariant: function (variant) {
+            setVariant(variant)
+            {
                 log.trace('modal button set variant', variant);
 
                 this.variant = variant;
+
                 return this;
             },
 
-            get btnClass () {
+            get btnClass()
+            {
                 var btnClass = 'btn-';
-                if (this.severity) {
+
+                if (this.severity)
+                {
                     btnClass += Severity.getCssClass(this.severity);
-                } else {
+                }
+                else
+                {
                     btnClass += 'default';
                 }
-                if (this.variant) {
+                if (this.variant)
+                {
                     // add custom variant
                     btnClass += ' btn-' + this.variant;
                 }
+
                 return btnClass;
             },
         };
     }
 
-    function testConstraints (constraints, variable, name) {
-        log.trace('test constraints', constraints, typeof variable, name);
-
-        if (!constraints) {
-            return;
-        }
-        if ((constraints & builder.constraints.required) !== 0) {
-            if (!variable) {
-                throw new TypeError(
-                    translate(translateKeys.variableNotDefined, name));
-            }
-        }
-        if ((constraints & builder.constraints.func) !== 0) {
-            if (variable && typeof variable !== 'function') {
-                throw new TypeError(
-                    translate(translateKeys.variableNotFunction, name));
-            }
-        }
-        if ((constraints & builder.constraints.int) !== 0) {
-            if (variable && !Number.isInteger(variable)) {
-                //maybe to picky since it is only used as decision for design
-                //razz (flood) sys-admin with warning would be better
-                //TODO: log notice "errors" on server
-                throw new TypeError(
-                    translate(translateKeys.variableNotInteger, name));
-            }
-        }
-    }
 
     // Simple modal close after button clicked
-    function dismissModal () {
+    function dismissModal()
+    {
         log.trace('modal dismiss');
 
         // TODO: check for a better solution
@@ -373,7 +454,8 @@ define([
             .trigger('modal-dismiss');
     }
 
-    function createBaseModal (title, message) {
+    function createBaseModal(title, message)
+    {
         log.trace('create base model');
 
         return builder.modal(title, message)
@@ -381,7 +463,8 @@ define([
             .dismissOnButtonClick();
     }
 
-    function createShowModal (title, message, callbacks) {
+    function createShowModal(title, message, callbacks)
+    {
         log.trace('create show model');
 
         return createBaseModal(title, message)
@@ -390,11 +473,12 @@ define([
                 builder.button(translateKeys.okayLabel)
                     .translateLabel()
                     .onClick(callbacks.yes)
-                    .setActive()
+                    .setActive(),
             );
     }
 
-    function createConfirmModal (title, message, callbacks) {
+    function createConfirmModal(title, message, callbacks)
+    {
         log.trace('create confirm model');
 
         return createShowModal(title, message, callbacks)
@@ -402,7 +486,8 @@ define([
             .prependButton(createCancelButton(callbacks.no));
     }
 
-    function createCancelButton (clickListener) {
+    function createCancelButton(clickListener)
+    {
         log.trace('create cancel modal button');
 
         return builder.button(translateKeys.cancelLabel)
@@ -417,13 +502,15 @@ define([
          * Simple modal builder which make modal much easier and more fun.
          */
         builder: builder,
+
         /**
          * Simple modal notification popup to annoy some users ... has to be an
          * important message - maybe written in uppercase. XD
          * @param message
          * @param callbacks
          */
-        warning: function (message, callbacks) {
+        warning(message, callbacks)
+        {
             log.info('warning with message', message);
 
             callbacks = callbacks || {};
@@ -431,12 +518,14 @@ define([
             return createShowModal(message, message, callbacks)
                 .show();
         },
+
         /**
          * Simple confirm to make non critical decisions
          * @param message
          * @param callbacks
          */
-        confirm: function (message, callbacks) {
+        confirm(message, callbacks)
+        {
             log.info('confirm with message', message);
 
             callbacks = callbacks || {};
@@ -444,13 +533,15 @@ define([
             return createConfirmModal(message, message, callbacks)
                 .show();
         },
+
         /**
          * Confirm to leave page and lose data
          * @param message
          * @param saveCallback
          * @param callbacks
          */
-        confirmNavigate: function (message, saveCallback, callbacks) {
+        confirmNavigate(message, saveCallback, callbacks)
+        {
             log.info('confirm navigate with message', message);
 
             callbacks = callbacks || {};
@@ -462,13 +553,13 @@ define([
                 .appendButton(
                     builder.button(translateKeys.saveLabel)
                         .translateLabel()
-                        .onClick(saveCallback, builder.constraints.required)
+                        .onClick(saveCallback, builder.constraints.required),
                 )
                 .appendButton(
                     builder.button(translateKeys.discardLabel)
                         .translateLabel()
                         .onClick(callbacks.yes)
-                        .setSeverity(Severity.error)
+                        .setSeverity(Severity.error),
                 )
                 .show();
         },
