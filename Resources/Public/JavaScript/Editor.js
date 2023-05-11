@@ -19,16 +19,18 @@ define([
     'jquery',
     './Utils/TranslatorLoader',
     './Utils/Logger',
-    './Modal'
-], function createEditorControl (
+    './Modal',
+], function createEditorControl(
     $,
     TranslatorLoader,
     Logger,
-    Modal
-) {
+    Modal,
+)
+{
     'use strict';
 
     var log = Logger('FEditing:Editor');
+
     log.trace('--> createEditorControl');
 
     var translateKeys = {
@@ -38,36 +40,38 @@ define([
     };
 
     var translator = TranslatorLoader
-        .useTranslator('editor', function reload (t) {
+        .useTranslator('editor', function reload(t)
+        {
             translateKeys = $.extend(translateKeys, t.getKeys());
         }).translator;
 
-    function translate () {
+    function translate()
+    {
         return translator.translate.apply(translator, arguments);
     }
 
     var defaultEditorConfig = {
-        'skin': 'moono',
-        'entities_latin': false,
-        'htmlEncodeOutput': false,
-        'allowedContent': true,
-        'customConfig': '',
-        'stylesSet': [],
-        'autoParagraph': false
+        skin: 'moono',
+        entities_latin: false,
+        htmlEncodeOutput: false,
+        allowedContent: true,
+        customConfig: '',
+        stylesSet: [],
+        autoParagraph: false,
     };
 
     /**
-	 * Default simple toolbar for non CKEditor (RTE) field
-	 *
-	 * @type {{toolbarGroups: [*]}}
-	 */
+     * Default simple toolbar for non CKEditor (RTE) field
+     *
+     * @type {{toolbarGroups: [*]}}
+     */
     var defaultSimpleEditorConfig = {
         toolbarGroups: [
             {
                 name: 'clipboard',
-                groups: ['clipboard', 'undo']
-            }
-        ]
+                groups: ['clipboard', 'undo'],
+            },
+        ],
     };
 
     var storage;
@@ -76,10 +80,11 @@ define([
     var $topBar;
 
     return {
-        init: init
+        init: init,
     };
 
-    function init ($iframe, configurationUrl, resourcePath) {
+    function init($iframe, configurationUrl, resourcePath)
+    {
         log.trace('init', $iframe, configurationUrl, resourcePath);
 
         // Only the content in the iframe will be used
@@ -97,7 +102,8 @@ define([
         configureEditableContent(configurationUrl);
     }
 
-    function appendInlineEditingStylesheet (resourcePath) {
+    function appendInlineEditingStylesheet(resourcePath)
+    {
         $iFrameContents.find('head')
             .append(
                 $(
@@ -105,37 +111,42 @@ define([
                     {
                         rel: 'stylesheet',
                         href: resourcePath + 'Css/inline_editing.css',
-                        type: 'text/css'
-                    }
-                )
+                        type: 'text/css',
+                    },
+                ),
             );
 
-            $iFrameContents.find('head')
+        $iFrameContents.find('head')
             .append(
                 $(
                     '<link/>',
                     {
                         rel: 'stylesheet',
                         href: resourcePath + 'Css/responsive.css',
-                        type: 'text/css'
-                    }
-                )
+                        type: 'text/css',
+                    },
+                ),
             );
     }
 
-    function suppressAnchorTagsToRedirect () {
+    function suppressAnchorTagsToRedirect()
+    {
         $iFrameContents.find('a')
-            .click(function navigateWithAPI (event) {
+            .click(function navigateWithAPI(event)
+            {
                 log.debug('iframe content anchor clicked', this);
 
-                if (event.isDefaultPrevented()) {
+                if (event.isDefaultPrevented())
+                {
                     log.trace('click event is prevented', event);
 
                     return;
                 }
 
                 var linkUrl = this.href;
-                if (!linkUrl || linkUrl.indexOf('#') === 0) {
+
+                if (!linkUrl || linkUrl.indexOf('#') === 0)
+                {
                     return;
                 }
 
@@ -144,49 +155,72 @@ define([
             });
     }
 
-    function loadStorage () {
+    function loadStorage()
+    {
         // Storage for adding and checking if it's empty when navigating to
         // other pages
         // TODO: replace adding and checking by simple signals
         storage = F.getStorage();
     }
 
-    function isStorageEmpty () {
+    function isStorageEmpty()
+    {
         return storage.isEmpty();
     }
 
-    function addSaveItem (id, saveItem) {
+    function addSaveItem(id, saveItem)
+    {
         log.trace('addSaveItem', id, saveItem);
 
         return storage.addSaveItem(id, saveItem);
     }
 
-    function prepareInlineActions () {
+    function prepareInlineActions()
+    {
         var $inlineActions = $iFrameContents
             .find('span.t3-frontend-editing__inline-actions');
 
+        console.log($iFrameContents);
+        var $inlineActionsLeftBar = $('.menu.blue-left-side')
+            .find('span.t3-frontend-editing__inline-actions');
+
         log.debug('prepare inline-actions', $inlineActions);
-
-        $inlineActions.each(function defaultInitializeInlineActions (index) {
+        log.debug('prepare inline-actions', $inlineActionsLeftBar);
+        $inlineActions.each(function defaultInitializeInlineActions(index)
+        {
             log.trace('defaultInitializeInlineActions', index);
-
             var $inlineAction = $(this);
             var previous = index > 0 ? $inlineActions[index - 1] : null;
-            var next = index < $inlineActions.length - 1
-                ? $inlineActions[index + 1] : null;
+            var next = index < $inlineActions.length - 1 ?
+                $inlineActions[index + 1] : null;
 
             initializeInlineAction($inlineAction, previous, next);
             $inlineAction.data('t3-frontend-editing-initialized', true);
+        });
+
+        $inlineActionsLeftBar.each(function defaultInitializeInlineActionsLeftBar(index)
+        {
+            log.trace('defaultInitializeInlineActionsLeftBar', index);
+            var $inlineActionLeftBar = $(this);
+            var previous = index > 0 ? $inlineActionsLeftBar[index - 1] : null;
+            var next = index < $inlineActionsLeftBar.length - 1 ?
+                $inlineActionsLeftBar[index + 1] : null;
+
+            initializeInlineActionLeftBar($inlineActionLeftBar, previous, next);
+            $inlineActionLeftBar.data('t3-frontend-editing-initialized', true);
         });
 
         // Make sure that inline actions inserted after iFrame page
         // initialization are initialized.
         $iFrameContents.on('mouseover',
             'span.t3-frontend-editing__inline-actions',
-            function postInitializeInlineAction () {
-                //TODO: Find a clean solution to update move up/move down action
+            function postInitializeInlineAction()
+            {
+                // TODO: Find a clean solution to update move up/move down action
                 var $inlineAction = $(this);
-                if (!$inlineAction.data('t3-frontend-editing-initialized')) {
+
+                if (!$inlineAction.data('t3-frontend-editing-initialized'))
+                {
                     log.debug('prepare inline-actions', $inlineActions);
 
                     initializeInlineAction.call(this, [$inlineAction]);
@@ -195,112 +229,262 @@ define([
             });
     }
 
-    function initializeInlineAction ($inlineAction, previous, next) {
+    function initializeInlineAction($inlineAction, previous, next)
+    {
         log.trace('initializeInlineAction', $inlineAction, previous, next);
 
         var uid = $inlineAction.data('uid');
         var table = $inlineAction.data('table');
         var editUrl = $inlineAction.data('edit-url');
         var newUrl = $inlineAction.data('new-url');
-
         var hidden = String($inlineAction.data('hidden'));
         var cid = String($inlineAction.data('cid'));
 
         $inlineAction.find('img')
-            .on('dragstart', function disableDrag (event) {
+            .on('dragstart', function disableDrag(event)
+            {
                 log.debug('prevent drag on image', this);
 
                 event.preventDefault();
+
                 return false;
             });
 
         $inlineAction.find('.icon-actions-open, .icon-actions-document-new')
-            .on('click', function openEditOrNewDocAction () {
+            .on('click', function openEditOrNewDocAction()
+            {
+                console.log($inlineAction);
                 var $this = $(this);
                 var identifier = $this.data('identifier');
 
                 log.info('open modal action', identifier);
 
                 var url = editUrl;
-                if (identifier === 'actions-document-new') {
+
+                if (identifier === 'actions-document-new')
+                {
                     url = newUrl;
                 }
 
-                if (isStorageEmpty()) {
+                if (isStorageEmpty())
+                {
                     openModal(url);
+
                     return;
                 }
 
                 Modal.confirmNavigate(
                     translate(translateKeys.confirmOpenModalWithChange),
-                    function save () {
+                    function save()
+                    {
                         F.saveAll();
                         openModal(url);
                     }, {
-                        yes: function () {
+                        yes()
+                        {
                             openModal(url);
                         },
-                    }
+                    },
                 );
-
             });
-
+        //  Delete action
         $inlineAction.find('.icon-actions-edit-delete')
-            .on('click', function deleteAction () {
+            .on('click', function deleteAction()
+            {
+                console.log('delete');
                 log.info('delete action', uid, table);
 
                 Modal.confirm(
                     translate(
-                        translateKeys.confirmDeleteContentElement
-                    ), {
-                        yes: function () {
+                        translateKeys.confirmDeleteContentElement,
+                    ),
+                    {
+                        yes()
+                        {
                             F.delete(uid, table);
                         },
-                    }
+                    },
                 );
             });
 
         $inlineAction
             .find('.icon-actions-edit-hide, .icon-actions-edit-unhide')
-            .on('click', function toggleHidden () {
+            .on('click', function toggleHidden()
+            {
                 log.info('toggle hide action', uid, table, hidden);
 
                 var hide = 1;
-                if (String(hidden) === '1') {
+
+                if (String(hidden) === '1')
+                {
                     hide = 0;
                 }
                 F.hideContent(uid, table, hide);
             });
 
         var $moveUpButton = $inlineAction.find('.icon-actions-move-up');
-        if (previous && String(previous.dataset.cid) === cid) {
-            $moveUpButton.on('click', function moveContentUp () {
+
+        if (previous && String(previous.dataset.cid) === cid)
+        {
+            $moveUpButton.on('click', function moveContentUp()
+            {
                 log.info('move content up action', uid, table);
 
                 F.moveContent(previous.dataset.uid, table, uid);
             });
-        } else {
+        }
+        else
+        {
             $moveUpButton.hide();
         }
 
         var $moveDownButton = $inlineAction.find('.icon-actions-move-down');
-        if (next && String(next.dataset.cid) === cid) {
-            $moveDownButton.on('click', function moveContentDown () {
+
+        if (next && String(next.dataset.cid) === cid)
+        {
+            $moveDownButton.on('click', function moveContentDown()
+            {
                 log.info('move content down action', uid, table);
 
                 F.moveContent(uid, table, next.dataset.uid);
             });
-        } else {
+        }
+        else
+        {
             $moveDownButton.hide();
         }
     }
+    function initializeInlineActionLeftBar($inlineActionLeftBar, previous, next)
+    {
+        log.trace('initializeInlineActionLeftBar', $inlineActionLeftBar, previous, next);
 
-    function openModal (url) {
+        var uid = $inlineActionLeftBar.data('uid');
+        var table = $inlineActionLeftBar.data('table');
+        var editUrl = $inlineActionLeftBar.data('edit-url');
+        var newUrl = $inlineActionLeftBar.data('new-url');
+        var hidden = String($inlineActionLeftBar.data('hidden'));
+        var cid = String($inlineActionLeftBar.data('cid'));
+
+        $inlineActionLeftBar.find('img')
+            .on('dragstart', function disableDrag(event)
+            {
+                log.debug('prevent drag on image', this);
+
+                event.preventDefault();
+
+                return false;
+            });
+
+        $inlineActionLeftBar.find('.icon-actions-open, .icon-actions-document-new')
+            .on('click', function openEditOrNewDocAction()
+            {
+                console.log($inlineActionLeftBar);
+                var $this = $(this);
+                var identifier = $this.data('identifier');
+
+                log.info('open modal action', identifier);
+
+                var url = editUrl;
+
+                if (identifier === 'actions-document-new')
+                {
+                    url = newUrl;
+                }
+
+                if (isStorageEmpty())
+                {
+                    openModal(url);
+
+                    return;
+                }
+
+                Modal.confirmNavigate(
+                    translate(translateKeys.confirmOpenModalWithChange),
+                    function save()
+                    {
+                        F.saveAll();
+                        openModal(url);
+                    }, {
+                        yes()
+                        {
+                            openModal(url);
+                        },
+                    },
+                );
+            });
+
+        $inlineActionLeftBar.find('.icon-actions-edit-delete')
+            .on('click', function deleteAction()
+            {
+                log.info('delete action', uid, table);
+
+                Modal.confirm(
+                    translate(
+                        translateKeys.confirmDeleteContentElement,
+                    ), {
+                        yes()
+                        {
+                            F.delete(uid, table);
+                        },
+                    },
+                );
+            });
+
+        $inlineActionLeftBar
+            .find('.icon-actions-edit-hide, .icon-actions-edit-unhide')
+            .on('click', function toggleHidden()
+            {
+                log.info('toggle hide action', uid, table, hidden);
+
+                var hide = 1;
+
+                if (String(hidden) === '1')
+                {
+                    hide = 0;
+                }
+                F.hideContent(uid, table, hide);
+            });
+
+        var $moveUpButton = $inlineActionLeftBar.find('.icon-actions-move-up');
+
+        if (previous && String(previous.dataset.cid) === cid)
+        {
+            $moveUpButton.on('click', function moveContentUp()
+            {
+                log.info('move content up action', uid, table);
+
+                F.moveContent(previous.dataset.uid, table, uid);
+            });
+        }
+        else
+        {
+            $moveUpButton.hide();
+        }
+
+        var $moveDownButton = $inlineActionLeftBar.find('.icon-actions-move-down');
+
+        if (next && String(next.dataset.cid) === cid)
+        {
+            $moveDownButton.on('click', function moveContentDown()
+            {
+                log.info('move content down action', uid, table);
+
+                F.moveContent(uid, table, next.dataset.uid);
+            });
+        }
+        else
+        {
+            $moveDownButton.hide();
+        }
+    }
+    function openModal(url)
+    {
         require([
             'jquery',
             'TYPO3/CMS/Backend/Modal',
-            'TYPO3/CMS/Backend/Toolbar/ShortcutMenu' //used cause of side effect
-        ], function createIFrameModal ($, Modal) {
+            'TYPO3/CMS/Backend/Toolbar/ShortcutMenu', // used cause of side effect
+        ], function createIFrameModal($, Modal)
+        {
             log.debug('open modal', url);
 
             Modal.advanced({
@@ -310,59 +494,60 @@ define([
                 size: Modal.sizes.large,
                 // bad naming is cause of typo3 lib
                 // eslint-disable-next-line id-denylist
-                callback: function (currentModal) {
+                callback(currentModal)
+                {
                     var modalIframe = currentModal.find(Modal.types.iframe);
+
                     modalIframe.attr('name', 'list_frame');
 
                     log.debug('modal ready', currentModal);
 
-                    modalIframe.on('load', function propagateTypo3 () {
+                    modalIframe.on('load', function propagateTypo3()
+                    {
                         log.trace(
                             'propagate Typo3 environment',
                             window.TYPO3,
-                            modalIframe[0].contentWindow.TYPO3
+                            modalIframe[0].contentWindow.TYPO3,
                         );
 
                         $.extend(
                             window.TYPO3,
-                            modalIframe[0].contentWindow.TYPO3 || {}
+                            modalIframe[0].contentWindow.TYPO3 || {},
                         );
 
                         // Simulate BE environment with correct CKEditor
                         // instance for RteLinkBrowser
                         top.TYPO3.Backend = top.TYPO3.Backend || {};
                         top.TYPO3.Backend.ContentContainer = {
-                            get: function () {
+                            get()
+                            {
                                 return modalIframe[0].contentWindow;
-                            }
+                            },
                         };
 
                         log.debug(
                             'Typo3 environment propagated',
                             window.TYPO3,
-                            top.TYPO3.Backend
+                            top.TYPO3.Backend,
                         );
                     });
 
                     currentModal.on('hidden.bs.modal',
-                        function cleanupModalIFrame () {
+                        function cleanupModalIFrame()
+                        {
                             log.trace('clean up modal iFrame');
 
                             delete top.TYPO3.Backend.ContentContainer;
                             F.refreshIframe();
                         });
-                }
+                },
             });
         });
     }
 
-    /***********************************/
-    /*                                 */
-    /*  CKEditor Configuration section */
-    /*                                 */
-    /***********************************/
 
-    function configureEditableContent (configurationUrl) {
+    function configureEditableContent(configurationUrl)
+    {
         log.trace('configureEditableContent', configurationUrl);
 
         // Add custom configuration to ckeditor
@@ -370,7 +555,8 @@ define([
         var requestData = [];
 
         $iFrameContents.find('[contenteditable=\'true\']')
-            .each(function initEditorAndConfigureInlineEditor () {
+            .each(function initEditorAndConfigureInlineEditor()
+            {
                 var $editableContent = $(this);
                 var $parent = $editableContent.parent();
 
@@ -378,8 +564,10 @@ define([
 
                 // Prevent linked content element to be clickable in the
                 // frontend editing mode
-                if ($parent.is('a')) {
-                    $parent.on('click', function preventOtherHandler (event) {
+                if ($parent.is('a'))
+                {
+                    $parent.on('click', function preventOtherHandler(event)
+                    {
                         log.debug('preventParentClickHandler', this);
 
                         event.preventDefault();
@@ -396,14 +584,17 @@ define([
 
                 var tagName = $editableContent.prop('tagName');
                 // TODO check if div or in general a block element is needed
-                if (tagName.toLowerCase() === 'div') {
+
+                if (tagName.toLowerCase() === 'div')
+                {
                     // configure as CKeditor instance
                     configurableEditableElements.push(this);
                     requestData.push({
-                        'table': table,
-                        'uid': uid,
-                        'field': field
+                        table: table,
+                        uid: uid,
+                        field: field,
                     });
+
                     return;
                 }
 
@@ -411,19 +602,20 @@ define([
 
                 // inline elements are disallowed for CKeditor instance
                 var saveItem = {
-                    'action': 'save',
-                    'table': table,
-                    'uid': uid,
-                    'field': field,
-                    'hasCkeditorConfiguration': null,
-                    'editorInstance': null,
-                    'inlineElement': true,
-                    'text': $editableContent.text()
+                    action: 'save',
+                    table: table,
+                    uid: uid,
+                    field: field,
+                    hasCkeditorConfiguration: null,
+                    editorInstance: null,
+                    inlineElement: true,
+                    text: $editableContent.text(),
                 };
 
                 $editableContent.on(
                     'blur keyup paste input',
-                    function persistNonCkEditorChanges () {
+                    function persistNonCkEditorChanges()
+                    {
                         saveItem.text = $editableContent.text();
 
                         log.debug('persist non ckEditor changes', id, saveItem);
@@ -433,13 +625,14 @@ define([
                     });
             });
 
-        if (requestData.length > 0) {
+        if (requestData.length > 0)
+        {
             F.showLoadingScreen();
 
             log.debug(
                 'load ckeditor configuration',
                 configurationUrl,
-                requestData
+                requestData,
             );
 
             $.ajax({
@@ -449,14 +642,17 @@ define([
                 // wording is part of jQuery API
                 // eslint-disable-next-line id-denylist
                 data: {
-                    'elements': requestData
-                }
+                    elements: requestData,
+                },
             })
-                .done(function handleConfigureResponse (response) {
+                .done(function handleConfigureResponse(response)
+                {
                     log.debug('handleConfigureResponse', response);
 
                     var $editableElements = $(configurableEditableElements);
-                    $editableElements.each(function initEditor () {
+
+                    $editableElements.each(function initEditor()
+                    {
                         var $editableElement = $(this);
 
                         var uid = $editableElement.data('uid');
@@ -466,7 +662,8 @@ define([
 
                         var elementData = response.configurations[
                             response.elementToConfiguration[elementIdentifier]
-                        ];
+                            ];
+
                         configureCkEditor($editableElement, elementData);
                     });
                 })
@@ -475,7 +672,8 @@ define([
         }
     }
 
-    function configureCkEditor ($editableElement, elementData) {
+    function configureCkEditor($editableElement, elementData)
+    {
         log.trace('configureCkEditor', $editableElement, elementData);
 
         var uid = $editableElement.data('uid');
@@ -484,13 +682,14 @@ define([
         var elementIdentifier = uid + '_' + table + '_' + field;
 
         // Ensure all plugins / buttons are loaded
-        if (typeof elementData.externalPlugins !== 'undefined') {
+        if (typeof elementData.externalPlugins !== 'undefined')
+        {
             log.debug(
                 'load external plugings by eval',
-                elementData.externalPlugins
+                elementData.externalPlugins,
             );
 
-            //TODO: check if eval could be replaced by better solution
+            // TODO: check if eval could be replaced by better solution
             // eslint-disable-next-line no-eval
             eval(elementData.externalPlugins);
         }
@@ -498,9 +697,11 @@ define([
 
         var config = $.extend(true, {},
             defaultEditorConfig,
-            elementData.configuration
+            elementData.configuration,
         );
-        if (!elementData.hasCkeditorConfiguration) {
+
+        if (!elementData.hasCkeditorConfiguration)
+        {
             $.extend(true, config, defaultSimpleEditorConfig);
         }
 
@@ -509,8 +710,10 @@ define([
         // Initialize CKEditor now,
         // when finished remember any change
         var ckeditor = $editableElement.ckeditor(config);
+
         ckeditor.on('instanceReady.ckeditor',
-            function bindCkEditorHandler (event, editor) {
+            function bindCkEditorHandler(event, editor)
+            {
                 log.debug('ckEditor instance is ready', event, editor);
 
                 // This moves the dom instances of ckeditor
@@ -520,23 +723,25 @@ define([
                     .appendTo($topBar);
 
                 var saveItem = {
-                    'action': 'save',
-                    'table': table,
-                    'uid': uid,
-                    'field': field,
-                    'hasCkeditorConfiguration':
+                    action: 'save',
+                    table: table,
+                    uid: uid,
+                    field: field,
+                    hasCkeditorConfiguration:
                     elementData.hasCkeditorConfiguration,
-                    'editorInstance': editor.name
+                    editorInstance: editor.name,
                 };
 
-                editor.on('change', function persistEditorChangedIndicator () {
+                editor.on('change', function persistEditorChangedIndicator()
+                {
                     log.trace('persistEditorChangedIndicator');
 
-                    if (typeof editor.element !== 'undefined') {
+                    if (typeof editor.element !== 'undefined')
+                    {
                         log.debug(
                             'persist saveItem',
                             elementIdentifier,
-                            saveItem
+                            saveItem,
                         );
 
                         addSaveItem(elementIdentifier, saveItem);
@@ -546,18 +751,19 @@ define([
             });
     }
 
-    function handleConfigurationRequestError (response) {
+    function handleConfigurationRequestError(response)
+    {
         log.error(
             'CKEditor configuration request failed',
-            response
+            response,
         );
 
         F.trigger(F.REQUEST_ERROR, {
             message: translate(
                 translateKeys.informRequestFailed,
                 response.status,
-                response.statusText
-            )
+                response.statusText,
+            ),
         });
     }
 });
