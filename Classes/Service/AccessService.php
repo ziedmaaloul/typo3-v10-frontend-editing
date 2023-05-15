@@ -27,6 +27,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class AccessService implements SingletonInterface
 {
+
+    const feEditingAlreadyLoaded = "fe_editing_already_loaded";
     /**
      * Frontend editing is enabled.
      *
@@ -40,15 +42,6 @@ class AccessService implements SingletonInterface
      */
     public function __construct()
     {
-        // debug($GLOBALS['TSFE']);
-
-        // debug($GLOBALS['BE_USER']);
-
-        // die;
-        // // Frontend editing needs to be enabled also by admins
-        // if (isset($GLOBALS['BE_USER']) && $GLOBALS['TSFE']->config['config']['frontend_editing'] == 1) {
-        //     $this->isEnabled = (bool)$GLOBALS['BE_USER']->uc['frontend_editing'] === true;
-        // }
         // Determine if page is loaded from the TYPO3 BE
         if ($this->isEnabled && !empty(GeneralUtility::getIndpEnv('HTTP_REFERER'))) {
             $parsedReferer = parse_url(GeneralUtility::getIndpEnv('HTTP_REFERER'));
