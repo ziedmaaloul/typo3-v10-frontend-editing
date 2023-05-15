@@ -30,6 +30,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+use TYPO3\CMS\FrontendEditing\Service\AccessService;
+use TYPO3\CMS\FrontendEditing\Utility\FrontendEditingUtility;
+
 
 /**
  * A class for adding wrapping for a content element to be editable.
@@ -80,11 +83,30 @@ class ContentEditableWrapperService
     }
 
     /**
+     * If Page Can be edited
+     */
+    protected function checkIfEditionLoaded()
+    {
+        if(isset($GLOBALS["_GET"])){
+
+            if(!isset($GLOBALS["_GET"][AccessService::feEditingAlreadyLoaded])){
+                return true;
+            }
+
+            if(isset($GLOBALS["_GET"][AccessService::feEditingAlreadyLoaded]) && $GLOBALS["_GET"][AccessService::feEditingAlreadyLoaded] == '1'){
+                return true;
+            }
+
+        }
+
+        return true;
+    }
+    /**
      * Add the proper wrapping (html tag) to make the content editable by CKEditor.
      *
      * @throws \InvalidArgumentException
      */
-    public function wrapContentToBeEditable(string $table, string $field, int $uid, string $content): string
+    public function wrapContentToBeEditable(string $table, string $field, int $uid, string $content ): string
     {
         // Check that data is not empty
         if (empty($table)) {
@@ -113,10 +135,13 @@ class ContentEditableWrapperService
         }
 
         $placeholderText = $this->getPlaceholderText($table, $field);
+        $accessService = new AccessService();
+
+
 
         $content = sprintf(
-            '<%s '
-            .'contenteditable="true" '
+            '<%s '.
+            (FrontendEditingUtility::isEnabled()  && $this->checkIfEditionLoaded() && $accessService->isEnabled() ? 'contenteditable="true" ': '').' '
             .'data-table="%s" '
             .'data-field="%s" '
             .'data-uid="%d" '
