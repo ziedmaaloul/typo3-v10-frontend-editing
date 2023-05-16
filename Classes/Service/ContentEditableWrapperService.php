@@ -191,14 +191,15 @@ class ContentEditableWrapperService
 
         $hiddenElementClassName = $this->checkIfContentElementIsHidden($table, (int) $uid);
         $elementIsHidden = $hiddenElementClassName !== '';
-
+        $accessService = new AccessService();
         $recordTitle = $this->recordTitle($table, $dataArr);
 
         // @TODO: include config as parameter and make cid (columnIdentifier) able to set by combining fields
         // Could make it would make it possible to configure cid for use with extensions that create columns by content
         $class = 't3-frontend-editing__inline-actions';
         $content = sprintf(
-            '<%s class="t3-frontend-editing__ce %s" title="%s" data-movable="1"'.
+            '<%s class="'.
+            (FrontendEditingUtility::isEnabled()  && $this->checkIfEditionLoaded() && $accessService->isEnabled() ? 't3-frontend-editing__ce': '').' %s" title="%s" data-movable="1"'.
                 ' ondragstart="window.parent.F.dragCeStart(event)"'.
                 ' ondragend="window.parent.F.dragCeEnd(event)">'.
                 '<span style="display:none;" class="%s" data-table="%s" data-uid="%d" data-hidden="%s"'.
@@ -340,21 +341,15 @@ class ContentEditableWrapperService
      */
     protected function switchToLocalLanguageEquivalent(string &$table, int &$uid)
     {
-        $typo3VersionNumber = VersionNumberUtility::convertVersionNumberToInteger(
-            VersionNumberUtility::getNumericTypo3Version()
-        );
-
+       
         /** @var TypoScriptFrontendController $frontendController */
         $frontendController = $GLOBALS['TSFE'];
 
-        if ($typo3VersionNumber < 9004000) {
-            // @extensionScannerIgnoreLine
-            $languageId = $frontendController->sys_language_uid;
-        } else {
-            /** @var LanguageAspect $languageAspect */
-            $languageAspect = GeneralUtility::makeInstance(Context::class)->getAspect('language');
-            $languageId = $languageAspect->getId();
-        }
+ 
+        /** @var LanguageAspect $languageAspect */
+        $languageAspect = GeneralUtility::makeInstance(Context::class)->getAspect('language');
+        $languageId = $languageAspect->getId();
+        
 
         if ($languageId !== 0) {
             $translatedRecords = BackendUtility::getRecordLocalization(
