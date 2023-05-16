@@ -848,6 +848,22 @@ class FrontendEditingInitializationHook
      */
     protected function getContentItems(): array
     {
+
+        $configurationManager = GeneralUtility::makeInstance(
+            ConfigurationManager::class
+        );
+
+        $settings = $configurationManager->getConfiguration($configurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
+        $settings = $settings['plugin.']['tx_frontend_editing.']['settings.'];
+        $enableExcludeStartWithValue = $settings["enableExcludeStartWithValue."];
+        $new_key = max(array_keys($enableExcludeStartWithValue));
+        $enableExcludeStartWith = $enableExcludeStartWithValue[$new_key];
+
+        $excludeStartWithValue = $settings["excludeStartWithValue."];
+        $new_key = max(array_keys($excludeStartWithValue));
+        $startWithValue = $excludeStartWithValue[$new_key];
+
+        $startExclusion = $startWithValue;
         $contentController = $this->getNewContentElementController();
 
         $wizardItems = $contentController->publicGetWizards();
@@ -860,19 +876,31 @@ class FrontendEditingInitializationHook
                     $wizardTabKey = $wizardKey;
                     $contentItems[$wizardTabKey]['description'] = $wizardItem['header'];
                 } else {
-                    $contentItems[$wizardTabKey]['items'][] = array_merge(
-                        $wizardItem,
-                        [
-                            'iconHtml' => $this->iconFactory->getIcon($wizardItem['iconIdentifier'])->render(),
-                        ]
-                    );
+                    
+
+                    if(!$enableExcludeStartWith){
+                        $contentItems[$wizardTabKey]['items'][] = array_merge(
+                            $wizardItem,
+                            [
+                                'iconHtml' => $this->iconFactory->getIcon($wizardItem['iconIdentifier'])->render(),
+                            ]
+                        );
+                    }
+
+                    else {
+                        if(!str_starts_with($wizardItem["iconIdentifier"], $startExclusion)){
+                            $contentItems[$wizardTabKey]['items'][] = array_merge(
+                                $wizardItem,
+                                [
+                                    'iconHtml' => $this->iconFactory->getIcon($wizardItem['iconIdentifier'])->render(),
+                                ]
+                            );
+                        }
+                    }
+                    
                 }
             }
         }
-
-        // debug($contentItems);
-        // die;
-
         return $contentItems;
     }
 
