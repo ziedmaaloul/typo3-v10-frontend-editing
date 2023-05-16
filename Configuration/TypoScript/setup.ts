@@ -37,6 +37,8 @@ tt_content.mailform.stdWrap < lib.fluidContent.stdWrap
 plugin.tx_frontend_editing {
     settings {
         enableDefaultRightBar.10 = 1
+        enableExcludeStartWithValue.10 = 0
+        excludeStartWithValue.10 = content-
         domain.10 = http://fe.local/
         defaultColors{
             primaryColor.0=#0089C5
