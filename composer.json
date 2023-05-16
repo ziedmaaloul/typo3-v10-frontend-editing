@@ -1,7 +1,7 @@
 {
 	"name": "soft2do/frontend-editing",
 	"type": "typo3-cms-extension",
-	"version" : "2.3.0",
+	"version" : "2.4.0",
 	"state": "stable",
 	"description": "Enable editors to work with the content in the most intuitive way possible Is Extended from Typo3 Frontend editing", 
 	"license": ["GPL-2.0-or-later"],
