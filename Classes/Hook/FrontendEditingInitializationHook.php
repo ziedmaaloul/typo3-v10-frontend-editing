@@ -60,7 +60,7 @@ use TYPO3\CMS\FrontendEditing\Service\ContentEditableWrapperService;
 use TYPO3\CMS\FrontendEditing\Service\ExtensionManagerConfigurationService;
 use TYPO3\CMS\FrontendEditing\Utility\ConfigurationUtility;
 use TYPO3\CMS\FrontendEditing\Utility\FrontendEditingUtility;
-
+use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 /**
  * Hook class using the "ContentPostProc" hook in TSFE for rendering the panels
  * and iframe for inline editing.
@@ -108,6 +108,7 @@ class FrontendEditingInitializationHook
     protected $isSiteConfigurationFound = false;
 
     protected $moduleTemplateFactory = null;
+    protected $ttContent = 'tt_content';
 
     /**
      * ContentPostProc constructor.
@@ -374,6 +375,8 @@ class FrontendEditingInitializationHook
      */
     public function main(array $params, TypoScriptFrontendController $parentObject)
     {
+        $this->connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        
         if (FrontendEditingUtility::isEnabled() &&
             $parentObject->getPageArguments()->get(self::FRONTEND_EDITING_ALREADY_LOADED) == null &&
             isset($GLOBALS['BE_USER'])
@@ -929,6 +932,7 @@ class FrontendEditingInitializationHook
         }
     }
 
+
     /**
      * Get the content elements on the page.
      *
@@ -936,16 +940,20 @@ class FrontendEditingInitializationHook
      */
     protected function getContentElementsOnPage(int $pageId): array
     {
+
         if (!$this->typoScriptFrontendController->cObj instanceof ContentObjectRenderer) {
             $this->typoScriptFrontendController->newCObj();
         }
-        $contentElements = $this->typoScriptFrontendController->cObj->getRecords(
-            'tt_content',
-            [
-                'pidInList' => $pageId,
-                'orderBy' => 'sorting',
-            ]
-        );
+        
+
+        $queryBuilder = $this->connectionPool->getQueryBuilderForTable($this->ttContent);
+        $queryBuilder->getRestrictions()->removeByType(HiddenRestriction::class);
+
+        $contentElements = $queryBuilder->select('*')->from($this->ttContent)->where(
+            $queryBuilder->expr()->like('pid', $pageId),
+        )->execute()->fetchAll();
+
+
         foreach ($contentElements as &$contentElement) {
             $contentElement['_recordTitle'] = BackendUtility::getRecordTitle('tt_content', $contentElement);
         }
