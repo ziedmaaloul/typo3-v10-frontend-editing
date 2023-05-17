@@ -341,7 +341,7 @@ class FrontendEditingInitializationHook
             'primaryColor' => $primaryColor,
             'secondaryColor' => $secondaryColor,
             'enableDefaultRightBar' => $enableDefaultRightBar,
-            'overlayOption' => $GLOBALS['BE_USER']->uc['frontend_editing_overlay'],
+            'overlayOption' => isset($GLOBALS['BE_USER']->uc['frontend_editing_overlay']) ? $GLOBALS['BE_USER']->uc['frontend_editing_overlay'] : null,
             'currentUser' => $GLOBALS['BE_USER']->user,
             'currentTime' => $GLOBALS['EXEC_TIME'],
             'currentPage' => $this->typoScriptFrontendController->id,
@@ -801,7 +801,7 @@ class FrontendEditingInitializationHook
         } else {
             $allowedMounts = $beUSER->returnWebmounts();
 
-            $hideRecordsPages = $beUSER->getTSConfig()['options.']['hideRecords.']['pages'];
+            $hideRecordsPages = isset( $beUSER->getTSConfig()['options.']['hideRecords.']['pages']) ?  $beUSER->getTSConfig()['options.']['hideRecords.']['pages'] : [];
 
             if ($pidList = $hideRecordsPages) {
                 $hideList += GeneralUtility::intExplode(',', $pidList, true);
