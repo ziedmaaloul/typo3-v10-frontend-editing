@@ -3,7 +3,7 @@ $GLOBALS['TCA']['be_users']['columns']['beuser_frontend_editing'] = [
     'label' => 'LLL:EXT:frontend_editing/Resources/Private/Language/locallang.xlf:settings.field.frontend_editing',
     "config" => [
         'renderType' => 'checkboxToggle',
-        'default' => 1,
+        'default' => 0,
         'type' => 'check',
     ]
 ]; 
