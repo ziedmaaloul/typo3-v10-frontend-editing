@@ -60,12 +60,17 @@ class AccessService implements SingletonInterface
      */
     public function isEnabled(): bool
     {
+
         if (isset($GLOBALS['BE_USER']) && $GLOBALS['BE_USER']) {
 
 
             if (isset($GLOBALS['BE_USER']->uc['frontend_editing']) && $GLOBALS['BE_USER']->uc['frontend_editing']) {
                     return true;
             }
+
+            if (isset($GLOBALS['BE_USER']->user["beuser_frontend_editing"]) && $GLOBALS['BE_USER']->user["beuser_frontend_editing"]) {
+                return true;
+        }
         }
 
         return false;
