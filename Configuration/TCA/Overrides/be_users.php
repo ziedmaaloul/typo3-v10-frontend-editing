@@ -6,6 +6,6 @@ $GLOBALS['TCA']['be_users']['columns']['beuser_frontend_editing'] = [
         'default' => 1,
         'type' => 'check',
     ]
-];
+]; 
 
 $GLOBALS['TCA']['be_users']["types"][0]["showitem"] = str_replace('--div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,','--div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,beuser_frontend_editing,' , $GLOBALS['TCA']['be_users']["types"][0]["showitem"]); 
