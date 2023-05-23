@@ -332,7 +332,7 @@ class FrontendEditingInitializationHook
         $primaryColor = $primaryColorValues[$newKeyPrimaryColor];
 
 
-        if(iset($GLOBALS['BE_USER']->user["primary_color"]) && $GLOBALS['BE_USER']->user["primary_color"]){
+        if(isset($GLOBALS['BE_USER']->user["primary_color"]) && $GLOBALS['BE_USER']->user["primary_color"]){
             $primaryColor = $GLOBALS['BE_USER']->user["primary_color"];
         }
 
@@ -344,7 +344,7 @@ class FrontendEditingInitializationHook
         $secondaryColor = $secondaryColorValues[$newKeysecondaryColor];
         // End Working On Secondary Color
         
-        if(iset($GLOBALS['BE_USER']->user["secondary_color"]) && $GLOBALS['BE_USER']->user["secondary_color"]){
+        if(isset($GLOBALS['BE_USER']->user["secondary_color"]) && $GLOBALS['BE_USER']->user["secondary_color"]){
             $secondaryColor = $GLOBALS['BE_USER']->user["secondary_color"];
         }
 
