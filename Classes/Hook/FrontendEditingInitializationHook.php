@@ -330,6 +330,12 @@ class FrontendEditingInitializationHook
         $primaryColorValues = $settings['plugin.']['tx_frontend_editing.']['settings.']['defaultColors.']['primaryColor.'];
         $newKeyPrimaryColor = max(array_keys($primaryColorValues));
         $primaryColor = $primaryColorValues[$newKeyPrimaryColor];
+
+
+        if(iset($GLOBALS['BE_USER']->user["primary_color"]) && $GLOBALS['BE_USER']->user["primary_color"]){
+            $primaryColor = $GLOBALS['BE_USER']->user["primary_color"];
+        }
+
         // End Working On Primary Color
 
         // Start Working On Secondary Color
@@ -338,6 +344,10 @@ class FrontendEditingInitializationHook
         $secondaryColor = $secondaryColorValues[$newKeysecondaryColor];
         // End Working On Secondary Color
         
+        if(iset($GLOBALS['BE_USER']->user["secondary_color"]) && $GLOBALS['BE_USER']->user["secondary_color"]){
+            $secondaryColor = $GLOBALS['BE_USER']->user["secondary_color"];
+        }
+
         $view->assignMultiple([
             'primaryColor' => $primaryColor,
             'secondaryColor' => $secondaryColor,
