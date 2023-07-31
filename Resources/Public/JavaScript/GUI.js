@@ -83,6 +83,7 @@ define([
     FrontendEditing.prototype.showLoadingScreen = showLoadingScreen;
     FrontendEditing.prototype.hideLoadingScreen = hideLoadingScreen;
     FrontendEditing.prototype.refreshIframe = refreshIframe;
+    FrontendEditing.prototype.reloadIframe = reloadIframe;
     FrontendEditing.prototype.showSuccess = showSuccess;
     FrontendEditing.prototype.showError = showError;
     FrontendEditing.prototype.showWarning = showWarning;
@@ -898,12 +899,20 @@ define([
     {
         log.debug('refreshIframe');
         saveScrollPosition();
-        // loadPageIntoIframe(iframeUrl, editorConfigurationUrl);
+        // reload url+ remove 'fe_editing_already_loaded'
+        loadPageIntoIframe(iframeUrl, editorConfigurationUrl);
+
+    }
+
+    function reloadIframe()
+    {
+        log.debug('refreshIframe');
+        saveScrollPosition();
         // reload url+ remove 'fe_editing_already_loaded'
         var pos = iframeUrl.indexOf('&fe_editing_already_loaded');
         var newIframeUrl = iframeUrl.substring(0, pos);
-
         window.location.href = newIframeUrl;
+
     }
 
     function showLoadingScreen()
