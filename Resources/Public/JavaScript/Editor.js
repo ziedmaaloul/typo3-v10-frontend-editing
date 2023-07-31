@@ -177,10 +177,14 @@ define([
 
     function prepareInlineActions()
     {
+        var $mainInlineActions = $iFrameContents.find('.m-main > .t3-frontend-editing__ce > span.t3-frontend-editing__inline-actions');
+
         var $inlineActions = $iFrameContents
             .find('span.t3-frontend-editing__inline-actions');
 
-        console.log($iFrameContents);
+        var $mainInlineActionsLeftBar = $('.menu.blue-left-side')
+            .find('.main-element > .element-wrapper span.t3-frontend-editing__inline-actions');
+
         var $inlineActionsLeftBar = $('.menu.blue-left-side')
             .find('span.t3-frontend-editing__inline-actions');
 
@@ -193,9 +197,18 @@ define([
             var previous = index > 0 ? $inlineActions[index - 1] : null;
             var next = index < $inlineActions.length - 1 ?
                 $inlineActions[index + 1] : null;
-
             initializeInlineAction($inlineAction, previous, next);
             $inlineAction.data('t3-frontend-editing-initialized', true);
+        });
+        $mainInlineActions.each(function defaultInitializeMoveInlineActions(index)
+        {
+            log.trace('defaultInitializeMoveInlineActions', index);
+            var $mainInlineAction = $(this);
+            var previous = index > 0 ? $mainInlineActions[index - 1] : null;
+            var next = index < $mainInlineActions.length - 1 ?
+                $mainInlineActions[index + 1] : null;
+            intializeMoveAction($mainInlineAction, previous, next);
+            $mainInlineAction.data('t3-frontend-editing-initialized', true);
         });
 
         $inlineActionsLeftBar.each(function defaultInitializeInlineActionsLeftBar(index)
@@ -207,6 +220,17 @@ define([
                 $inlineActionsLeftBar[index + 1] : null;
 
             initializeInlineActionLeftBar($inlineActionLeftBar, previous, next);
+            $inlineActionLeftBar.data('t3-frontend-editing-initialized', true);
+        });
+
+        $mainInlineActionsLeftBar.each(function defaultInitializeMainInlineActionsLeftBar(index)
+        {
+            log.trace('defaultInitializeMainInlineActionsLeftBar', index);
+            var $inlineActionLeftBar = $(this);
+            var previous = index > 0 ? $mainInlineActionsLeftBar[index - 1] : null;
+            var next = index < $mainInlineActionsLeftBar.length - 1 ?
+                $mainInlineActionsLeftBar[index + 1] : null;
+            initializeMoveInlineActionLeftBar($inlineActionLeftBar, previous, next);
             $inlineActionLeftBar.data('t3-frontend-editing-initialized', true);
         });
 
@@ -229,6 +253,43 @@ define([
             });
     }
 
+    function intializeMoveAction($inlineAction, previous, next)
+    {
+        log.trace('intializeMoveAction', $inlineAction, previous, next);
+
+        var uid = $inlineAction.data('uid');
+        var table = $inlineAction.data('table');
+        var cid = String($inlineAction.data('cid'));
+        var $moveUpButton = $inlineAction.find('.icon-actions-move-up');
+        var $element = $('.t3-frontend-editing__inline-actions[data-uid="' + uid + '"]').closest('.element');
+        var $previous = $element.prev();
+        var $next = $element.next();
+
+        if (previous && String(previous.dataset.cid) === cid)
+        {
+            $moveUpButton.show();
+            $moveUpButton.on('click', function moveContentUp()
+            {
+                log.info('move content up action', uid, table);
+                F.moveContent(previous.dataset.uid, table, uid);
+                moveUpLeftBar($previous, $element);
+            });
+        }
+
+        var $moveDownButton = $inlineAction.find('.icon-actions-move-down');
+
+        if (next && String(next.dataset.cid) === cid)
+        {
+            $moveDownButton.show();
+            $moveDownButton.on('click', function moveContentDown()
+            {
+                log.info('move content down action', uid, table);
+                F.moveContent(uid, table, next.dataset.uid);
+                moveUpLeftBar($element, $next);
+            });
+        }
+    }
+
     function initializeInlineAction($inlineAction, previous, next)
     {
         log.trace('initializeInlineAction', $inlineAction, previous, next);
@@ -239,7 +300,11 @@ define([
         var newUrl = $inlineAction.data('new-url');
         var hidden = String($inlineAction.data('hidden'));
         var cid = String($inlineAction.data('cid'));
-
+        var $moveUpButton = $inlineAction.find('.icon-actions-move-up');
+        var $moveDownButton = $inlineAction.find('.icon-actions-move-down');
+        var $element = $('.t3-frontend-editing__inline-actions[data-uid="' + uid + '"]').closest('.element');
+        $moveUpButton.hide();
+        $moveDownButton.hide();
         $inlineAction.find('img')
             .on('dragstart', function disableDrag(event)
             {
@@ -253,7 +318,6 @@ define([
         $inlineAction.find('.icon-actions-open, .icon-actions-document-new')
             .on('click', function openEditOrNewDocAction()
             {
-                console.log($inlineAction);
                 var $this = $(this);
                 var identifier = $this.data('identifier');
 
@@ -291,7 +355,6 @@ define([
         $inlineAction.find('.icon-actions-edit-delete')
             .on('click', function deleteAction()
             {
-                console.log('delete');
                 log.info('delete action', uid, table);
 
                 Modal.confirm(
@@ -302,6 +365,7 @@ define([
                         yes()
                         {
                             F.delete(uid, table);
+                            $element.remove();
                         },
                     },
                 );
@@ -320,38 +384,46 @@ define([
                     hide = 0;
                 }
                 F.hideContent(uid, table, hide);
+                F.reloadIframe();
             });
-
-        var $moveUpButton = $inlineAction.find('.icon-actions-move-up');
+    }
+    function moveUpLeftBar($previous, $element, $next) {
+        $element.detach().insertBefore($previous);
+    }
+    function initializeMoveInlineActionLeftBar($inlineActionLeftBar, previous, next)
+    {
+        var uid = $inlineActionLeftBar.data('uid');
+        var table = $inlineActionLeftBar.data('table');
+        var cid = String($inlineActionLeftBar.data('cid'));
+        var $moveUpButton = $inlineActionLeftBar.find('.icon-actions-move-up');
+        var $moveDownButton = $inlineActionLeftBar.find('.icon-actions-move-down');
+        var $element = $('.t3-frontend-editing__inline-actions[data-uid="'+uid+'"]').closest('.element');
+        var $previous = $element.prev();
+        var $next = $element.next();
 
         if (previous && String(previous.dataset.cid) === cid)
         {
+            $moveUpButton.show();
             $moveUpButton.on('click', function moveContentUp()
             {
                 log.info('move content up action', uid, table);
 
                 F.moveContent(previous.dataset.uid, table, uid);
+                moveUpLeftBar($previous, $element);
             });
         }
-        else
-        {
-            $moveUpButton.hide();
-        }
 
-        var $moveDownButton = $inlineAction.find('.icon-actions-move-down');
 
         if (next && String(next.dataset.cid) === cid)
         {
+            $moveDownButton.show();
             $moveDownButton.on('click', function moveContentDown()
             {
                 log.info('move content down action', uid, table);
 
                 F.moveContent(uid, table, next.dataset.uid);
+                moveUpLeftBar($element, $next);
             });
-        }
-        else
-        {
-            $moveDownButton.hide();
         }
     }
     function initializeInlineActionLeftBar($inlineActionLeftBar, previous, next)
@@ -364,6 +436,11 @@ define([
         var newUrl = $inlineActionLeftBar.data('new-url');
         var hidden = String($inlineActionLeftBar.data('hidden'));
         var cid = String($inlineActionLeftBar.data('cid'));
+        var $moveUpButton = $inlineActionLeftBar.find('.icon-actions-move-up');
+        var $element = $('.t3-frontend-editing__inline-actions[data-uid="' + uid + '"]').closest('.element');
+        $moveUpButton.hide();
+        var $moveDownButton = $inlineActionLeftBar.find('.icon-actions-move-down');
+        $moveDownButton.hide();
 
         $inlineActionLeftBar.find('img')
             .on('dragstart', function disableDrag(event)
@@ -378,7 +455,6 @@ define([
         $inlineActionLeftBar.find('.icon-actions-open, .icon-actions-document-new')
             .on('click', function openEditOrNewDocAction()
             {
-                console.log($inlineActionLeftBar);
                 var $this = $(this);
                 var identifier = $this.data('identifier');
 
@@ -425,6 +501,7 @@ define([
                         yes()
                         {
                             F.delete(uid, table);
+                            $element.remove();
                         },
                     },
                 );
@@ -443,39 +520,8 @@ define([
                     hide = 0;
                 }
                 F.hideContent(uid, table, hide);
+                F.reloadIframe();
             });
-
-        var $moveUpButton = $inlineActionLeftBar.find('.icon-actions-move-up');
-
-        if (previous && String(previous.dataset.cid) === cid)
-        {
-            $moveUpButton.on('click', function moveContentUp()
-            {
-                log.info('move content up action', uid, table);
-
-                F.moveContent(previous.dataset.uid, table, uid);
-            });
-        }
-        else
-        {
-            $moveUpButton.hide();
-        }
-
-        var $moveDownButton = $inlineActionLeftBar.find('.icon-actions-move-down');
-
-        if (next && String(next.dataset.cid) === cid)
-        {
-            $moveDownButton.on('click', function moveContentDown()
-            {
-                log.info('move content down action', uid, table);
-
-                F.moveContent(uid, table, next.dataset.uid);
-            });
-        }
-        else
-        {
-            $moveDownButton.hide();
-        }
     }
     function openModal(url)
     {
