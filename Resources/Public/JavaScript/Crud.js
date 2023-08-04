@@ -336,7 +336,7 @@ define([
             // eslint-disable-next-line id-denylist
             data: {data: defVals}
         })
-            .always(F.refreshIframe);
+            .always(F.reloadIframe());
 
         appendTriggers(jqxhr);
     }
